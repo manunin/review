@@ -1,0 +1,133 @@
+# Frontend Refactoring TODO List
+
+## 🎯 High Priority
+
+### 1. UI Component Library Migration (Point 15)
+- [ ] Replace Vuetify with PrimeVue in package.json
+- [ ] Update main.js to use PrimeVue instead of Vuetify
+- [ ] Refactor all Vue components from Vuetify to PrimeVue syntax
+- [ ] Update plugins/vuetify.js to plugins/primevue.js
+- [ ] Replace all v-* Vuetify components with PrimeVue equivalents
+
+### 2. TypeScript Migration (Point 16)
+- [ ] Add TypeScript support to Vite config
+- [ ] Rename all .js files to .ts/.vue with TS
+- [ ] Add type definitions for all props, emits, and composables
+- [ ] Create interfaces for API responses and store state
+- [ ] Add proper typing for all components
+- [ ] Configure vue-tsc for type checking
+
+### 3. Service Layer Implementation (Point 10, 14)
+- [ ] Create src/services/api.service.ts for API client
+- [ ] **Mock all backend endpoints since backend is not ready**
+- [ ] Implement JWT token management in API service (mocked)
+- [ ] Create src/services/review.service.ts for review operations (with mock data)
+- [ ] Create src/services/analytics.service.ts for analytics (with mock data)
+- [ ] Move all API calls from store to service layer
+- [ ] Add request/response interceptors for error handling
+- [ ] **Create mock data generators for realistic testing**
+
+### 4. Global Error Handling (Point 17)
+- [ ] Implement app.config.errorHandler in main.js
+- [ ] Create error boundary composable
+- [ ] Add fallback UI states for all components
+- [ ] Create error notification system
+- [ ] Add error logging integration
+
+## 🔧 Medium Priority
+
+### 5. Mock Data & Development Setup
+- [ ] **Create src/mocks/ directory for mock data**
+- [ ] **Generate realistic mock data for reviews, analytics, users**
+- [ ] **Setup conditional API calls (mock vs real based on env)**
+- [ ] **Create mock delay simulation for realistic UX testing**
+- [ ] **Add mock error scenarios for error handling testing**
+
+### 6. Logging Module (Point 12, 13)
+- [ ] Create src/utils/logger.ts module
+- [ ] Implement log levels (info, warn, error, debug)
+- [ ] Add environment variable for debug mode
+- [ ] Integrate logging in all functions (start/completion)
+- [ ] **Add mock API call logging in debug mode**
+- [ ] Log all state changes with old/new values
+
+### 7. Testing Infrastructure (Point 8, 9)
+- [ ] Setup Vitest configuration
+- [ ] Install @vue/test-utils
+- [ ] Create test utilities and helpers
+- [ ] **Setup mock server for API testing (MSW or similar)**
+- [ ] Write unit tests for composables
+- [ ] Write component tests using blackbox strategy
+- [ ] **Test with mocked backend responses**
+- [ ] Add test coverage reporting
+
+### 8. Composables Extraction (Point 3)
+- [ ] Create src/composables/ directory
+- [ ] Extract reusable logic into composables with 'use' prefix
+- [ ] Create useApi composable for API operations (with mock fallbacks)
+- [ ] Create useLocalStorage composable
+- [ ] Create useErrorHandler composable
+- [ ] **Create useMockData composable for development**
+- [ ] Add proper TypeScript types for all composables
+
+### 9. Performance Optimization (Point 18)
+- [ ] Implement lazy loading for routes
+- [ ] Add v-memo for expensive computations in Analytics view
+- [ ] Replace reactive with shallowReactive for large objects
+- [ ] Implement component lazy loading
+- [ ] Add loading states and skeleton screens
+
+## 📝 Low Priority
+
+### 10. Code Organization (Point 20)
+- [ ] Ensure all file names use kebab-case
+- [ ] Verify all component names use PascalCase
+- [ ] Check all composables start with 'use' prefix
+- [ ] Convert constants to UPPER_SNAKE_CASE
+- [ ] Organize imports consistently
+
+### 11. Accessibility (Point 19)
+- [ ] Add ARIA labels to all interactive elements
+- [ ] Implement keyboard navigation
+- [ ] Check color contrast ratios (WCAG 2.1 AA)
+- [ ] Add focus management
+- [ ] Test with screen readers
+
+### 12. Environment Configuration (Point 21)
+- [ ] Create .env files for different environments
+- [ ] Move hardcoded URLs to environment variables
+- [ ] Remove any sensitive data from codebase
+- [ ] Configure build-time variable replacement
+
+### 13. Component Architecture (Point 5, 6)
+- [ ] Extract reusable UI elements to components directory
+- [ ] Remove function props from child components
+- [ ] Use events/emits instead of function props
+- [ ] Create shared component library structure
+
+### 14. Event Listeners Management (Point 7)
+- [ ] Audit all components for JS listeners
+- [ ] Add proper cleanup in onUnmounted
+- [ ] Use Vue's event handling where possible
+- [ ] Document listener lifecycle management
+
+### 15. Store Optimization (Point 4)
+- [ ] Review Pinia store for unnecessary fixed data
+- [ ] Keep only changeable state in store
+- [ ] Move static configuration to constants
+- [ ] **Replace API calls with mock data providers**
+- [ ] Optimize store structure and getters
+- [ ] **Add development mode flag for mock vs real API**
+
+### 16. Data Formatting (Point 11)
+- [ ] Move formatting logic close to output
+- [ ] Create formatting utilities for different contexts
+- [ ] Remove centralized formatting where inappropriate
+- [ ] Add date/number formatting composables
+
+## 🏁 Final Steps
+- [ ] Update documentation
+- [ ] Run full test suite
+- [ ] Performance audit
+- [ ] Accessibility audit
+- [ ] Code review and cleanup
