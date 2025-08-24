@@ -1,32 +1,14 @@
 <template>
-  <v-app>
-    <v-app-bar app color="primary" dark>
-      <v-app-bar-title>
-        <v-icon class="mr-2">mdi-magnify</v-icon>
-        Smart Review Analyzer
-      </v-app-bar-title>
-      
-      <v-spacer></v-spacer>
-      
-      <v-btn
-        v-for="item in navItems"
-        :key="item.path"
-        :to="item.path"
-        :class="{ 'v-btn--active': $route.path === item.path }"
-        text
-        class="mr-2"
-      >
-        <v-icon left>{{ item.icon }}</v-icon>
-        {{ item.label }}
-      </v-btn>
-    </v-app-bar>
-
-    <v-main>
-      <v-container>
-        <router-view />
-      </v-container>
-    </v-main>
-  </v-app>
+  <div id="app" style="max-width: 66vw; margin: 0 auto;">
+    <Menubar :model="menuItems" class="mb-3 flex justify-content-between align-items-center">
+      <template #start>
+        <span class="font-bold pl-2">VIEWMA</span>
+      </template>
+    </Menubar>
+    <div>
+      <router-view />
+    </div>
+  </div>
 </template>
 
 <script>
@@ -34,11 +16,18 @@ export default {
   name: 'App',
   data() {
     return {
-      navItems: [
-        { label: 'Home', path: '/', icon: 'mdi-home' },
-        { label: 'Upload', path: '/upload', icon: 'mdi-upload' },
-        { label: 'Reviews', path: '/reviews', icon: 'mdi-comment-text-multiple' },
-        { label: 'Analytics', path: '/analytics', icon: 'mdi-chart-line' },
+      menuItems: [
+        { 
+          label: 'Home', 
+          icon: 'pi pi-home',
+          command: () => this.$router.push('/')
+        },
+        { 
+          label: 'Upload', 
+          icon: 'pi pi-upload',
+          command: () => this.$router.push('/upload')
+        },
+
       ]
     }
   }

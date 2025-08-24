@@ -1,8 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/views/Home.vue'
 import Upload from '@/views/Upload.vue'
-import Reviews from '@/views/Reviews.vue'
-import Analytics from '@/views/Analytics.vue'
+
 
 const routes = [
   {
@@ -15,16 +14,7 @@ const routes = [
     name: 'Upload',
     component: Upload
   },
-  {
-    path: '/reviews',
-    name: 'Reviews',
-    component: Reviews
-  },
-  {
-    path: '/analytics',
-    name: 'Analytics',
-    component: Analytics
-  }
+
 ]
 
 const router = createRouter({

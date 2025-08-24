@@ -1,0 +1,89 @@
+# Vuetify to PrimeVue Migration Plan
+
+## 📋 Упрощенный план миграции с Vuetify на PrimeVue
+
+### 🔍 Phase 1: Analysis & Preparation
+1. **Audit Current Components**
+   - Составить список всех используемых Vuetify компонентов
+   - Найти PrimeVue эквиваленты для каждого компонента
+   - Выявить компоненты без прямых аналогов (потребуют custom решений)
+
+2. **Dependencies Planning**
+   - Определить необходимые PrimeVue пакеты и плагины
+   - Проверить совместимость с Vue 3 + Vite
+   - Планирование иконок (переход с MDI на PrimeIcons или сохранение MDI)
+
+### 🏗️ Phase 2: Infrastructure Setup
+3. **Package Management**
+   - Добавить PrimeVue зависимости в package.json
+   - Установить PrimeVue, PrimeIcons
+   - Удалить Vuetify зависимости
+
+4. **Configuration Setup**
+   - Создать `src/plugins/primevue.js`
+   - Настроить PrimeVue в main.js (заменить Vuetify)
+   - Настроить темы и стили PrimeVue
+   - Обновить Vite конфигурацию для PrimeVue
+
+### 🎨 Phase 3: Component Migration
+5. **Layout Components**
+   - App.vue: заменить v-app-bar на Menubar/Toolbar
+   - Заменить v-main, v-container на div с CSS Grid/Flexbox
+   - Обновить навигацию с v-btn на Button/MenuItems
+
+6. **Home View Migration**
+   - v-card → Card
+   - v-btn → Button
+   - v-icon → иконки PrimeVue или сохранить MDI
+
+7. **Upload View Migration**
+   - v-text-field → InputText
+   - v-file-input → FileUpload
+   - v-btn → Button
+   - v-progress-circular → ProgressSpinner
+
+8. **Reviews View Migration**
+   - v-data-table → DataTable
+   - v-dialog → Dialog
+   - v-list → DataView или Card layout
+   - v-select → Dropdown
+   - v-pagination → Paginator
+
+9. **Analytics View Migration**
+   - v-card → Card
+   - v-progress-circular → ProgressSpinner
+   - v-list → Card или Panel
+   - Сохранить Chart.js интеграцию
+
+### 🔧 Phase 4: Styling & Polish
+10. **Theming**
+    - Перенести цветовую схему на PrimeVue темы
+    - Обновить CSS переменные и классы
+    - Настроить responsive layout без PrimeFlex
+
+### 🏁 Phase 5: Cleanup
+11. **Final Cleanup**
+    - Удалить все Vuetify импорты и ссылки
+    - Удалить `plugins/vuetify.js`
+    - Проверить работоспособность всех view
+    - Обновить Point 15 в CONTEXT.MD с Vuetify на PrimeVue
+
+### 📝 Component Mapping Reference
+- `v-app` → обычный div wrapper
+- `v-app-bar` → `Menubar` или `Toolbar`
+- `v-main` → div с CSS layout
+- `v-container` → div с container стилями
+- `v-card` → `Card`
+- `v-btn` → `Button`
+- `v-text-field` → `InputText`
+- `v-select` → `Dropdown`
+- `v-data-table` → `DataTable`
+- `v-dialog` → `Dialog`
+- `v-progress-circular` → `ProgressSpinner`
+- `v-file-input` → `FileUpload`
+- `v-list` → `DataView` или `Card` layout
+- `v-icon` → PrimeIcons или сохранить MDI
+
+---
+
+Этот план фокусируется исключительно на прямой замене Vuetify на PrimeVue без дополнительных архитектурных изменений.

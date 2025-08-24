@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import vuetify from './plugins/vuetify'
+import primevue from './plugins/primevue'
 import Toast from 'vue-toastification'
 import 'vue-toastification/dist/index.css'
 
@@ -11,7 +11,7 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
-app.use(vuetify)
+primevue(app)
 app.use(Toast, {
   position: 'top-right',
   timeout: 5000,
