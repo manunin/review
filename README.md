@@ -1,4 +1,4 @@
-# Smart Review Analyzer 🔍✨
+# viewman 🔍✨
 
 > AI-powered review analysis platform for sentiment detection and valuable insights extraction
 
@@ -8,7 +8,7 @@
 
 ## 📋 Project Overview
 
-**Smart Review Analyzer** is an intelligent web platform for review analysis using machine learning methods. The system allows users to upload text reviews about products or services and automatically analyzes their sentiment, providing detailed statistics and insights.
+**Viewman** is an intelligent web platform for review analysis using machine learning methods. The system allows users to upload text reviews about products or services and automatically analyzes their sentiment, providing detailed statistics and insights.
 
 ### 🎯 Key Features
 
@@ -310,23 +310,12 @@ docker-compose -f docker-compose.prod.yml up
 
 ## 📞 Support
 
-- **Email**: support@smartreview.com
-- **Issues**: [GitHub Issues](https://github.com/manunin/review/issues)
-- **Documentation**: [Wiki](https://github.com/manunin/review/wiki)
-- **Chat**: [Discord Server](https://discord.gg/smartreview)
 
 ## 📄 License
 
 This project is licensed under the MIT License. See the `LICENSE` file for more information.
 
-## 🙏 Acknowledgments
-
-- [Hugging Face](https://huggingface.co/) for pre-trained models
-- [DeepPavlov](https://deeppavlov.ai/) for NLP tools
-- Open Source community for inspiration and support
-
----
 
 ⭐ If this project helped you, please give it a star on GitHub!
 
-**Made with ❤️ by the Smart Review Team**
+**Made with ❤️ by the Viewman Team**
