@@ -1,0 +1,285 @@
+{
+  "task_results": {
+    "get_single_result": {
+      "request": {
+        "method": "POST",
+        "url": "/api/v1/task/result/single",
+        "headers": {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        "body": {
+          "user_id": "some cookies id"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "task_id": "123e4567-e89b-12d3-a456-426614174000",
+          "type": "single",
+          "status": "ready",
+          "start": 1640995200,
+          "end": 1640995205,
+          "result": {
+            "sentiment": "positive",
+            "confidence": 0.95,
+            "text": "Excellent product, very satisfied!"
+          }
+        }
+      }
+    },
+
+    "get_single_result_queued": {
+      "request": {
+        "method": "POST",
+        "url": "/api/v1/task/result/single",
+        "headers": {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        "body": {
+          "user_id": "some cookies id"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "task_id": "123e4567-e89b-12d3-a456-426614174000",
+          "type": "single",
+          "status": "queued",
+          "start": 1640995200
+        }
+      }
+    },
+
+    "get_single_result_error": {
+      "request": {
+        "method": "POST",
+        "url": "/api/v1/task/result/single",
+        "headers": {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        "body": {
+          "user_id": "some cookies id"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "task_id": "123e4567-e89b-12d3-a456-426614174000",
+          "type": "single",
+          "status": "error",
+          "start": 1640995200,
+          "end": 1640995205,
+          "error": {
+            "code": "01",
+            "description": "Some backend original description"
+          }
+        }
+      }
+    },
+
+    "get_batch_result": {
+      "request": {
+        "method": "POST",
+        "url": "/api/v1/task/result/batch",
+        "headers": {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        "body": {
+          "user_id": "some cookies id"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "task_id": "123e4567-e89b-12d3-a456-426614174001",
+          "type": "batch",
+          "status": "ready",
+          "start": 1640995200,
+          "end": 1640995300,
+          "result": {
+            "total_reviews": 150,
+            "positive": 90,
+            "negative": 35,
+            "neutral": 25,
+            "positive_percentage": 60.0,
+            "negative_percentage": 23.3,
+            "neutral_percentage": 16.7
+          }
+        }
+      }
+    }
+  },
+
+  "task_execution": {
+    "run_single_task": {
+      "request": {
+        "method": "POST",
+        "url": "/api/v1/task/run/single",
+        "headers": {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        "body": {
+          "user_id": "some cookies id",
+          "text": "Text to check (max up to 512)"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "task_id": "123e4567-e89b-12d3-a456-426614174000",
+          "type": "single",
+          "status": "accepted",
+          "start": 1640995200,
+          "result": {
+            "sentiment": "positive",
+            "confidence": 0.95,
+            "text": "Text to check (max up to 512)"
+          }
+        }
+      }
+    },
+
+    "run_batch_task": {
+      "request": {
+        "method": "POST",
+        "url": "/api/v1/task/run/batch",
+        "headers": {
+          "Content-Type": "multipart/form-data",
+          "Accept": "application/json"
+        },
+        "body": "FormData with user_id field and file field containing CSV/TXT/JSON file (max 10MB)"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "task_id": "123e4567-e89b-12d3-a456-426614174001",
+          "type": "batch",
+          "status": "accepted",
+          "start": 1640995200,
+          "result": {
+            "total_reviews": 150,
+            "positive": 90,
+            "negative": 35,
+            "neutral": 25,
+            "positive_percentage": 60.0,
+            "negative_percentage": 23.3,
+            "neutral_percentage": 16.7
+          }
+        }
+      }
+    }
+  },
+
+  "errors": {
+    "not_found_single": {
+      "response": {
+        "status": 404,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "message": "No single task found for this user"
+        }
+      }
+    },
+
+    "not_found_batch": {
+      "response": {
+        "status": 404,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "message": "No batch task found for this user"
+        }
+      }
+    },
+
+    "validation_error": {
+      "response": {
+        "status": 422,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "message": "Validation failed",
+          "details": {
+            "text": ["This field is required", "Text must be at least 1 character long"],
+            "user_id": ["This field is required"]
+          }
+        }
+      }
+    },
+
+    "file_too_large": {
+      "response": {
+        "status": 413,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "message": "File size exceeds maximum limit of 10MB"
+        }
+      }
+    },
+
+    "unsupported_file_format": {
+      "response": {
+        "status": 415,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "message": "Unsupported file format. Supported: CSV, TXT, JSON"
+        }
+      }
+    },
+
+    "bad_request": {
+      "response": {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "message": "Invalid request parameters"
+        }
+      }
+    },
+
+    "internal_server_error": {
+      "response": {
+        "status": 500,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "message": "Internal server error occurred"
+        }
+      }
+    }
+  }
+}

@@ -21,3 +21,5 @@ This is a context for AI assistant for guideline
 19. All interactive elements must be keyboard accessible. ARIA labels are required for screen readers. Color contrast ratios follow WCAG 2.1 AA standards.
 20. File names use kebab-case. Component names use PascalCase. Composables start with 'use' prefix. Constants use UPPER_SNAKE_CASE.
 21. Environment-specific configurations are managed through .env files. No hardcoded URLs or sensitive data in the codebase.
+22. All text data in the project (descriptions, comments, etc) on English.
+23. To run 'npm run dev' first move to frontend directory

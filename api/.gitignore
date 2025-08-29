@@ -1,0 +1,30 @@
+# Generated files
+generated/
+docs/
+*.bundled.yml
+*.bundled.yaml
+
+# Previous versions for diff
+*.prev.yml
+*.prev.yaml
+
+# Tool outputs
+.swagger-codegen/
+.openapi-generator/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp

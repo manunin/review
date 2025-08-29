@@ -10,12 +10,12 @@
 - [v] Replace all v-* Vuetify components with PrimeVue equivalents
 
 ### 2. TypeScript Migration (Point 16)
-- [ ] Add TypeScript support to Vite config
-- [ ] Rename all .js files to .ts/.vue with TS
-- [ ] Add type definitions for all props, emits, and composables
-- [ ] Create interfaces for API responses and store state
-- [ ] Add proper typing for all components
-- [ ] Configure vue-tsc for type checking
+- [v] Add TypeScript support to Vite config
+- [v] Rename all .js files to .ts/.vue with TS
+- [v] Add type definitions for all props, emits, and composables
+- [v] Create interfaces for API responses and store state
+- [v] Add proper typing for all components
+- [v] Configure vue-tsc for type checking
 
 ### 3. Service Layer Implementation (Point 10, 14)
 - [ ] Create src/services/api.service.ts for API client

@@ -1,0 +1,469 @@
+openapi: 3.0.3
+info:
+  title: Review Analysis API
+  description: |
+    Task-based API for review analysis with support for sentiment analysis.
+    
+    The system works with a task-based architecture:
+    - Submit analysis tasks (single text or batch file)
+    - Retrieve results of completed tasks
+    - All operations use POST method for consistency
+    - User identification via cookies
+  version: 1.0.0
+  contact:
+    name: Review Analysis System
+    url: https://github.com/manunin/review
+  license:
+    name: MIT
+
+servers:
+  - url: /api/v1
+    description: Development server
+
+paths:
+  /task/result/single:
+    post:
+      summary: Get last single task result
+      description: |
+        Retrieves the result of the last single text analysis task for the user.
+        Returns task status and analysis result if completed.
+      tags:
+        - Task Results
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+              properties:
+                user_id:
+                  type: string
+                  description: User identification from cookies
+                  example: "some cookies id"
+      responses:
+        '200':
+          description: Task result retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              example:
+                task_id: "123e4567-e89b-12d3-a456-426614174000"
+                type: "single"
+                status: "ready"
+                start: 1640995200
+                end: 1640995205
+                result:
+                  sentiment: "positive"
+                  confidence: 0.95
+                  text: "Excellent product, very satisfied!"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: No single task found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                message: "No single task found for this user"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /task/result/batch:
+    post:
+      summary: Get last batch task result
+      description: |
+        Retrieves the result of the last batch analysis task for the user.
+        Returns task status and batch analysis results if completed.
+      tags:
+        - Task Results
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+              properties:
+                user_id:
+                  type: string
+                  description: User identification from cookies
+                  example: "some cookies id"
+      responses:
+        '200':
+          description: Task result retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              example:
+                task_id: "123e4567-e89b-12d3-a456-426614174001"
+                type: "batch"
+                status: "ready"
+                start: 1640995200
+                end: 1640995300
+                result:
+                  total_reviews: 150
+                  positive: 90
+                  negative: 35
+                  neutral: 25
+                  positive_percentage: 60.0
+                  negative_percentage: 23.3
+                  neutral_percentage: 16.7
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: No batch task found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                message: "No batch task found for this user"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /task/run/single:
+    post:
+      summary: Send task for analysis single text
+      description: |
+        Submits a single text for sentiment analysis.
+        Creates a new task and returns task information.
+        Use /task/result/single to check the result.
+      tags:
+        - Task Execution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+                - text
+              properties:
+                user_id:
+                  type: string
+                  description: User identification from cookies
+                  example: "some cookies id"
+                text:
+                  type: string
+                  description: Text to analyze (max 512 characters)
+                  maxLength: 512
+                  example: "Text to check (max up to 512)"
+      responses:
+        '200':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              example:
+                task_id: "123e4567-e89b-12d3-a456-426614174000"
+                type: "single"
+                status: "accepted"
+                start: 1640995200
+                result:
+                  sentiment: "positive"
+                  confidence: 0.95
+                  text: "Text to check (max up to 512)"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /task/run/batch:
+    post:
+      summary: Send task for batch (file) analysis
+      description: |
+        Submits a file for batch sentiment analysis.
+        Creates a new batch task and returns task information.
+        Use /task/result/batch to check the results.
+        Supported file formats: CSV, TXT, JSON (max 10MB).
+      tags:
+        - Task Execution
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - user_id
+                - file
+              properties:
+                user_id:
+                  type: string
+                  description: User identification from cookies
+                  example: "some cookies id"
+                file:
+                  type: string
+                  format: binary
+                  description: File with reviews (CSV/TXT/JSON, max 10MB)
+            encoding:
+              file:
+                contentType: text/csv, text/plain, application/json
+      responses:
+        '200':
+          description: Batch task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              example:
+                task_id: "123e4567-e89b-12d3-a456-426614174001"
+                type: "batch"
+                status: "accepted"
+                start: 1640995200
+                result:
+                  total_reviews: 150
+                  positive: 90
+                  negative: 35
+                  neutral: 25
+                  positive_percentage: 60.0
+                  negative_percentage: 23.3
+                  neutral_percentage: 16.7
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                message: "File size exceeds maximum limit of 10MB"
+        '415':
+          description: Unsupported file format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                message: "Unsupported file format. Supported: CSV, TXT, JSON"
+        '422':
+          description: File processing error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Task:
+      type: object
+      required:
+        - task_id
+        - type
+        - status
+        - start
+      properties:
+        task_id:
+          type: string
+          format: uuid
+          description: Unique task identifier
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        type:
+          type: string
+          enum: [single, batch]
+          description: Task type
+          example: "single"
+        status:
+          type: string
+          enum: [accepted, queued, ready, error]
+          description: Task status
+          example: "ready"
+        start:
+          type: integer
+          format: int64
+          description: Unix timestamp of task start
+          example: 1640995200
+        end:
+          type: integer
+          format: int64
+          description: Unix timestamp of task completion (optional)
+          example: 1640995205
+        result:
+          oneOf:
+            - $ref: '#/components/schemas/SingleResult'
+            - $ref: '#/components/schemas/BatchResult'
+          description: Task result (depends on task type)
+        error:
+          $ref: '#/components/schemas/TaskError'
+
+    SingleResult:
+      type: object
+      required:
+        - sentiment
+        - confidence
+      properties:
+        sentiment:
+          type: string
+          enum: [positive, negative, neutral]
+          description: Sentiment analysis result
+          example: "positive"
+        confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Model confidence in analysis result
+          example: 0.95
+        text:
+          type: string
+          description: Analyzed text (optional)
+          example: "Excellent product, very satisfied!"
+
+    BatchResult:
+      type: object
+      required:
+        - total_reviews
+        - positive
+        - negative
+        - neutral
+        - positive_percentage
+        - negative_percentage
+        - neutral_percentage
+      properties:
+        total_reviews:
+          type: integer
+          minimum: 0
+          description: Total number of reviews processed
+          example: 150
+        positive:
+          type: integer
+          minimum: 0
+          description: Number of positive reviews
+          example: 90
+        negative:
+          type: integer
+          minimum: 0
+          description: Number of negative reviews
+          example: 35
+        neutral:
+          type: integer
+          minimum: 0
+          description: Number of neutral reviews
+          example: 25
+        positive_percentage:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 100.0
+          description: Percentage of positive reviews
+          example: 60.0
+        negative_percentage:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 100.0
+          description: Percentage of negative reviews
+          example: 23.3
+        neutral_percentage:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 100.0
+          description: Percentage of neutral reviews
+          example: 16.7
+
+    TaskError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          enum: ["01", "02", "03"]
+          description: Error code
+          example: "01"
+        description:
+          type: string
+          description: Backend error description (optional)
+          example: "Some backend original description"
+
+    ApiError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Error description
+          example: "Internal server error occurred"
+        details:
+          type: object
+          description: Additional error details
+          additionalProperties: true
+
+    ValidationError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: General validation error description
+          example: "Validation failed"
+        details:
+          type: object
+          description: Detailed validation error information by fields
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            text: ["This field is required", "Text must be at least 1 character long"]
+            user_id: ["This field is required"]
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            message: "Invalid request parameters"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            message: "Task not found"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            message: "Internal server error occurred"
+
+tags:
+  - name: Task Results
+    description: Operations for retrieving task results
+  - name: Task Execution
+    description: Operations for creating and running analysis tasks
+
+security: []
+
+externalDocs:
+  description: Additional project documentation
+  url: https://github.com/manunin/review
