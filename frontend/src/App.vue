@@ -11,27 +11,30 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'App',
-  data() {
-    return {
-      menuItems: [
-        { 
-          label: 'Home', 
-          icon: 'pi pi-home',
-          command: () => this.$router.push('/')
-        },
-        { 
-          label: 'Upload', 
-          icon: 'pi pi-upload',
-          command: () => this.$router.push('/upload')
-        },
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
-      ]
-    }
-  }
+interface MenuItem {
+  label: string
+  icon: string
+  command: () => void
 }
+
+const router = useRouter()
+
+const menuItems = ref<MenuItem[]>([
+  { 
+    label: 'Home', 
+    icon: 'pi pi-home',
+    command: () => router.push('/')
+  },
+  { 
+    label: 'Upload', 
+    icon: 'pi pi-upload',
+    command: () => router.push('/upload')
+  }
+])
 </script>
 
 <style>

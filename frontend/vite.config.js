@@ -37,7 +37,6 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['vue', 'vue-router', 'pinia'],
-          primevue: ['primevue'],
           charts: ['chart.js']
         }
       }

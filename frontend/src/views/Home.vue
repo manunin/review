@@ -23,7 +23,7 @@
                 label="Get Started" 
                 icon="pi pi-upload" 
                 class="p-button-outlined p-mr-4"
-                @click="$router.push('/upload')"
+                @click="router.push('/upload')"
               />
             </div>
           </template>
@@ -59,77 +59,45 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
 import { useReviewStore } from '@/store'
-import { storeToRefs } from 'pinia'
-import { onMounted, computed } from 'vue'
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
-export default {
-  name: 'Home',
-  setup() {
-    const reviewStore = useReviewStore()
-    const { analytics, loading } = storeToRefs(reviewStore)
-    
-    const features = [
-      {
-        title: 'Sentiment Analysis',
-        description: 'Automatic detection of emotional tone in reviews (positive, negative, neutral)',
-        icon: 'pi pi-thumbs-up',
-        color: 'var(--primary-color)'
-      },
-      {
-        title: 'Batch Processing',
-        description: 'Upload and analyze multiple reviews simultaneously with support for various file formats',
-        icon: 'pi pi-file',
-        color: 'var(--green-500)'
-      },
-      {
-        title: 'Interactive Analytics',
-        description: 'Visual insights with charts, graphs, and detailed statistical breakdowns',
-        icon: 'pi pi-chart-pie',
-        color: 'var(--orange-500)'
-      }
-    ]
-
-    const stats = computed(() => [
-      {
-        title: 'Total Reviews',
-        value: analytics.value.total_reviews || 0,
-        icon: 'pi pi-comments',
-        color: 'var(--primary-color)'
-      },
-      {
-        title: 'Positive',
-        value: `${analytics.value.positive_percentage || 0}%`,
-        icon: 'pi pi-thumbs-up',
-        color: 'var(--green-500)'
-      },
-      {
-        title: 'Negative',
-        value: `${analytics.value.negative_percentage || 0}%`,
-        icon: 'pi pi-thumbs-down',
-        color: 'var(--red-500)'
-      },
-      {
-        title: 'Neutral',
-        value: `${analytics.value.neutral_percentage || 0}%`,
-        icon: 'pi pi-minus',
-        color: 'var(--orange-500)'
-      }
-    ])
-
-    onMounted(async () => {
-      await reviewStore.fetchAnalytics()
-    })
-
-    return {
-      features,
-      stats,
-      analytics,
-      loading
-    }
-  }
+interface Feature {
+  title: string
+  description: string
+  icon: string
+  color: string
 }
+
+const router = useRouter()
+const reviewStore = useReviewStore()
+
+const features: Feature[] = [
+  {
+    title: 'Sentiment Analysis',
+    description: 'Automatic detection of emotional tone in reviews (positive, negative, neutral)',
+    icon: 'pi pi-thumbs-up',
+    color: 'var(--primary-color)'
+  },
+  {
+    title: 'Batch Processing',
+    description: 'Upload and analyze multiple reviews simultaneously with support for various file formats',
+    icon: 'pi pi-file',
+    color: 'var(--green-500)'
+  },
+  {
+    title: 'Interactive Analytics',
+    description: 'Visual insights with charts, graphs, and detailed statistical breakdowns',
+    icon: 'pi pi-chart-pie',
+    color: 'var(--orange-500)'
+  }
+]
+
+onMounted(async (): Promise<void> => {
+  await reviewStore.fetchAnalytics()
+})
 </script>
 
 <style scoped>

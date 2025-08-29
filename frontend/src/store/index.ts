@@ -1,5 +1,12 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import axios, { type AxiosResponse } from 'axios'
+import type { 
+  ReviewStoreState, 
+  Review, 
+  Analytics, 
+  ReviewAnalysis, 
+  UploadResult
+} from '@/types'
 
 // API client
 const api = axios.create({
@@ -10,7 +17,7 @@ const api = axios.create({
 })
 
 export const useReviewStore = defineStore('reviews', {
-  state: () => ({
+  state: (): ReviewStoreState => ({
     reviews: [],
     analytics: {
       total_reviews: 0,
@@ -26,31 +33,31 @@ export const useReviewStore = defineStore('reviews', {
   }),
 
   getters: {
-    getAllReviews: (state) => state.reviews,
-    getAnalytics: (state) => state.analytics,
-    isLoading: (state) => state.loading,
-    getError: (state) => state.error,
+    getAllReviews: (state): Review[] => state.reviews,
+    getAnalytics: (state): Analytics => state.analytics,
+    isLoading: (state): boolean => state.loading,
+    getError: (state): string | null => state.error,
     
-    getReviewsBysentiment: (state) => (sentiment) => {
+    getReviewsBysentiment: (state) => (sentiment: string): Review[] => {
       if (sentiment === 'all') return state.reviews
       return state.reviews.filter(review => review.sentiment === sentiment)
     },
     
-    getTotalReviews: (state) => state.reviews.length,
+    getTotalReviews: (state): number => state.reviews.length,
     
-    getPositivePercentage: (state) => {
+    getPositivePercentage: (state): number => {
       if (state.reviews.length === 0) return 0
       const positive = state.reviews.filter(r => r.sentiment === 'positive').length
       return Math.round((positive / state.reviews.length) * 100)
     },
     
-    getNegativePercentage: (state) => {
+    getNegativePercentage: (state): number => {
       if (state.reviews.length === 0) return 0
       const negative = state.reviews.filter(r => r.sentiment === 'negative').length
       return Math.round((negative / state.reviews.length) * 100)
     },
     
-    getNeutralPercentage: (state) => {
+    getNeutralPercentage: (state): number => {
       if (state.reviews.length === 0) return 0
       const neutral = state.reviews.filter(r => r.sentiment === 'neutral').length
       return Math.round((neutral / state.reviews.length) * 100)
@@ -58,45 +65,45 @@ export const useReviewStore = defineStore('reviews', {
   },
 
   actions: {
-    setLoading(loading) {
+    setLoading(loading: boolean): void {
       this.loading = loading
     },
 
-    setError(error) {
+    setError(error: string | null): void {
       this.error = error
     },
 
-    clearError() {
+    clearError(): void {
       this.error = null
     },
 
-    setReviews(reviews) {
+    setReviews(reviews: Review[]): void {
       this.reviews = reviews
     },
 
-    addReview(review) {
+    addReview(review: Review): void {
       this.reviews.unshift(review)
     },
 
-    removeReview(reviewId) {
+    removeReview(reviewId: string): void {
       const index = this.reviews.findIndex(r => r.id === reviewId)
       if (index !== -1) {
         this.reviews.splice(index, 1)
       }
     },
 
-    setAnalytics(analytics) {
+    setAnalytics(analytics: Analytics): void {
       this.analytics = analytics
     },
 
-    async fetchReviews() {
+    async fetchReviews(): Promise<void> {
       this.setLoading(true)
       this.clearError()
       
       try {
-        const response = await api.get('/reviews/')
+        const response: AxiosResponse<Review[]> = await api.get('/reviews/')
         this.setReviews(response.data)
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to fetch reviews:', error)
         this.setError(error.response?.data?.detail || error.message || 'Failed to fetch reviews')
       } finally {
@@ -104,14 +111,14 @@ export const useReviewStore = defineStore('reviews', {
       }
     },
 
-    async fetchAnalytics() {
+    async fetchAnalytics(): Promise<void> {
       this.setLoading(true)
       this.clearError()
       
       try {
-        const response = await api.get('/analytics/summary')
-        this.setAnalytics(response.data.statistics)
-      } catch (error) {
+        const response: AxiosResponse<Analytics> = await api.get('/analytics/summary')
+        this.setAnalytics(response.data)
+      } catch (error: any) {
         console.error('Failed to fetch analytics:', error)
         this.setError(error.response?.data?.detail || error.message || 'Failed to fetch analytics')
       } finally {
@@ -119,16 +126,15 @@ export const useReviewStore = defineStore('reviews', {
       }
     },
 
-    async analyzeText(text) {
+    async analyzeText(text: string): Promise<ReviewAnalysis> {
       this.setLoading(true)
       this.clearError()
       
       try {
-        const response = await api.post('/reviews/analyze', { text })
+        const response: AxiosResponse<ReviewAnalysis> = await api.post('/reviews/analyze', { text })
         const review = response.data
-        this.addReview(review)
         return review
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to analyze text:', error)
         const errorMessage = error.response?.data?.detail || error.message || 'Failed to analyze text'
         this.setError(errorMessage)
@@ -138,7 +144,7 @@ export const useReviewStore = defineStore('reviews', {
       }
     },
 
-    async uploadFile(file) {
+    async uploadFile(file: File): Promise<UploadResult> {
       this.setLoading(true)
       this.clearError()
       
@@ -146,7 +152,7 @@ export const useReviewStore = defineStore('reviews', {
         const formData = new FormData()
         formData.append('file', file)
         
-        const response = await api.post('/upload/file', formData, {
+        const response: AxiosResponse<UploadResult> = await api.post('/upload/file', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -156,7 +162,7 @@ export const useReviewStore = defineStore('reviews', {
         await this.fetchReviews()
         
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to upload file:', error)
         const errorMessage = error.response?.data?.detail || error.message || 'Failed to upload file'
         this.setError(errorMessage)
@@ -166,7 +172,7 @@ export const useReviewStore = defineStore('reviews', {
       }
     },
 
-    async deleteReview(reviewId) {
+    async deleteReview(reviewId: string): Promise<boolean> {
       this.setLoading(true)
       this.clearError()
       
@@ -174,7 +180,7 @@ export const useReviewStore = defineStore('reviews', {
         await api.delete(`/reviews/${reviewId}`)
         this.removeReview(reviewId)
         return true
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to delete review:', error)
         const errorMessage = error.response?.data?.detail || error.message || 'Failed to delete review'
         this.setError(errorMessage)
@@ -184,14 +190,14 @@ export const useReviewStore = defineStore('reviews', {
       }
     },
 
-    async getReview(reviewId) {
+    async getReview(reviewId: string): Promise<Review> {
       this.setLoading(true)
       this.clearError()
       
       try {
-        const response = await api.get(`/reviews/${reviewId}`)
+        const response: AxiosResponse<Review> = await api.get(`/reviews/${reviewId}`)
         return response.data
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to get review:', error)
         const errorMessage = error.response?.data?.detail || error.message || 'Failed to get review'
         this.setError(errorMessage)

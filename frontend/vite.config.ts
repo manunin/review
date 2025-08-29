@@ -5,7 +5,7 @@ import { fileURLToPath, URL } from 'node:url'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    vue(),
+    vue()
   ],
   resolve: {
     alias: {
@@ -15,6 +15,12 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true,
+    hmr: {
+      overlay: true
+    },
+    watch: {
+      usePolling: true
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
@@ -31,7 +37,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['vue', 'vue-router', 'pinia'],
-          charts: ['chart.js', 'vue-chartjs']
+          charts: ['chart.js']
         }
       }
     }

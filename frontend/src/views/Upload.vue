@@ -239,262 +239,246 @@
   </div>
 </template>
 
-<script>
-
+<script setup lang="ts">
 import { useReviewStore } from '@/store'
 import { useToast } from 'vue-toastification'
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, nextTick, watch, type Ref } from 'vue'
 import { Chart, registerables } from 'chart.js'
+import type { ReviewAnalysis, UploadResult } from '@/types'
 
 Chart.register(...registerables)
 
-export default {
-  name: 'Upload',
-  setup() {
-    const reviewStore = useReviewStore()
-    const toast = useToast()
-    
-    const singleReviewText = ref('')
-    const singleReviewResult = ref(null)
-    const analyzing = ref(false)
-    const selectedFile = ref(null)
-    const uploading = ref(false)
-    const uploadResult = ref(null)
+const reviewStore = useReviewStore()
+const toast = useToast()
 
-    // Аналитика
-    const pieChart = ref(null)
-    const barChart = ref(null)
-    const reviewStoreAnalytics = useReviewStore()
-    const analytics = computed(() => reviewStoreAnalytics.analytics)
-    const loading = computed(() => reviewStoreAnalytics.loading)
+// Reactive refs with proper typing
+const singleReviewText: Ref<string> = ref('')
+const singleReviewResult: Ref<ReviewAnalysis | null> = ref(null)
+const analyzing: Ref<boolean> = ref(false)
+const selectedFile: Ref<File | null> = ref(null)
+const uploading: Ref<boolean> = ref(false)
+const uploadResult: Ref<UploadResult | null> = ref(null)
 
-    const dominantSentiment = computed(() => {
-      if (!analytics.value || analytics.value.total_reviews === 0) return 'neutral'
-      const sentiments = [
-        { name: 'positive', count: analytics.value.positive || 0 },
-        { name: 'negative', count: analytics.value.negative || 0 },
-        { name: 'neutral', count: analytics.value.neutral || 0 }
-      ]
-      return sentiments.reduce((prev, current) => prev.count > current.count ? prev : current).name
-    })
+// Chart refs
+const pieChart: Ref<HTMLCanvasElement | null> = ref(null)
+const barChart: Ref<HTMLCanvasElement | null> = ref(null)
 
-    const dominantPercentage = computed(() => {
-      if (!analytics.value) return 0
-      const percentages = {
-        positive: analytics.value.positive_percentage || 0,
-        negative: analytics.value.negative_percentage || 0,
-        neutral: analytics.value.neutral_percentage || 0
-      }
-      return percentages[dominantSentiment.value] || 0
-    })
+// Analytics computed
+const analytics = computed(() => reviewStore.analytics)
+const loading = computed(() => reviewStore.loading)
 
-    const dominantSentimentColor = computed(() => {
-      const colors = {
-        positive: 'var(--green-500)',
-        negative: 'var(--red-500)',
-        neutral: 'var(--orange-500)'
-      }
-      return colors[dominantSentiment.value]
-    })
+const dominantSentiment = computed((): string => {
+  if (!analytics.value || analytics.value.total_reviews === 0) return 'neutral'
+  const sentiments = [
+    { name: 'positive', count: analytics.value.positive || 0 },
+    { name: 'negative', count: analytics.value.negative || 0 },
+    { name: 'neutral', count: analytics.value.neutral || 0 }
+  ]
+  return sentiments.reduce((prev, current) => prev.count > current.count ? prev : current).name
+})
 
-    const dominantSentimentIcon = computed(() => {
-      const icons = {
-        positive: 'pi pi-thumbs-up',
-        negative: 'pi pi-thumbs-down',
-        neutral: 'pi pi-minus'
-      }
-      return icons[dominantSentiment.value]
-    })
+const dominantPercentage = computed((): number => {
+  if (!analytics.value) return 0
+  const percentages = {
+    positive: analytics.value.positive_percentage || 0,
+    negative: analytics.value.negative_percentage || 0,
+    neutral: analytics.value.neutral_percentage || 0
+  }
+  return percentages[dominantSentiment.value as keyof typeof percentages] || 0
+})
 
-    const createPieChart = () => {
-      if (!pieChart.value || !analytics.value || analytics.value.total_reviews === 0) return
-      const ctx = pieChart.value.getContext('2d')
-      Chart.getChart(pieChart.value)?.destroy()
-      new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: ['Positive', 'Negative', 'Neutral'],
-          datasets: [{
-            data: [
-              analytics.value.positive || 0,
-              analytics.value.negative || 0,
-              analytics.value.neutral || 0
-            ],
-            backgroundColor: [
-              '#4CAF50',
-              '#F44336',
-              '#FF9800'
-            ],
-            borderColor: [
-              '#388E3C',
-              '#D32F2F',
-              '#F57C00'
-            ],
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: { padding: 20 }
-            }
-          }
+const dominantSentimentColor = computed((): string => {
+  const colors = {
+    positive: 'var(--green-500)',
+    negative: 'var(--red-500)',
+    neutral: 'var(--orange-500)'
+  }
+  return colors[dominantSentiment.value as keyof typeof colors] || 'var(--surface-400)'
+})
+
+const dominantSentimentIcon = computed((): string => {
+  const icons = {
+    positive: 'pi pi-thumbs-up',
+    negative: 'pi pi-thumbs-down',
+    neutral: 'pi pi-minus'
+  }
+  return icons[dominantSentiment.value as keyof typeof icons] || 'pi pi-question'
+})
+// Chart creation functions
+const createPieChart = (): void => {
+  if (!pieChart.value || !analytics.value || analytics.value.total_reviews === 0) return
+  const ctx = pieChart.value.getContext('2d')
+  if (!ctx) return
+  
+  Chart.getChart(pieChart.value)?.destroy()
+  new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Positive', 'Negative', 'Neutral'],
+      datasets: [{
+        data: [
+          analytics.value.positive || 0,
+          analytics.value.negative || 0,
+          analytics.value.neutral || 0
+        ],
+        backgroundColor: [
+          '#4CAF50',
+          '#F44336',
+          '#FF9800'
+        ],
+        borderColor: [
+          '#388E3C',
+          '#D32F2F',
+          '#F57C00'
+        ],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { padding: 20 }
         }
-      })
+      }
     }
+  })
+}
 
-    const createBarChart = () => {
-      if (!barChart.value || !analytics.value || analytics.value.total_reviews === 0) return
-      const ctx = barChart.value.getContext('2d')
-      Chart.getChart(barChart.value)?.destroy()
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Positive', 'Negative', 'Neutral'],
-          datasets: [{
-            label: 'Number of Reviews',
-            data: [
-              analytics.value.positive || 0,
-              analytics.value.negative || 0,
-              analytics.value.neutral || 0
-            ],
-            backgroundColor: [
-              '#4CAF50',
-              '#F44336',
-              '#FF9800'
-            ],
-            borderColor: [
-              '#388E3C',
-              '#D32F2F',
-              '#F57C00'
-            ],
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { stepSize: 1 }
-            }
-          },
-          plugins: {
-            legend: { display: false }
-          }
+const createBarChart = (): void => {
+  if (!barChart.value || !analytics.value || analytics.value.total_reviews === 0) return
+  const ctx = barChart.value.getContext('2d')
+  if (!ctx) return
+  
+  Chart.getChart(barChart.value)?.destroy()
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Positive', 'Negative', 'Neutral'],
+      datasets: [{
+        label: 'Number of Reviews',
+        data: [
+          analytics.value.positive || 0,
+          analytics.value.negative || 0,
+          analytics.value.neutral || 0
+        ],
+        backgroundColor: [
+          '#4CAF50',
+          '#F44336',
+          '#FF9800'
+        ],
+        borderColor: [
+          '#388E3C',
+          '#D32F2F',
+          '#F57C00'
+        ],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 }
         }
-      })
+      },
+      plugins: {
+        legend: { display: false }
+      }
     }
+  })
+}
 
-    onMounted(async () => {
-      await reviewStoreAnalytics.fetchAnalytics()
-      nextTick(() => {
-        if (analytics.value.total_reviews > 0) {
-          createPieChart()
-          createBarChart()
-        }
-      })
-    })
+// Lifecycle hooks
+onMounted(async (): Promise<void> => {
+  await reviewStore.fetchAnalytics()
+  nextTick(() => {
+    if (analytics.value.total_reviews > 0) {
+      createPieChart()
+      createBarChart()
+    }
+  })
+})
 
-    watch(analytics, () => {
-      nextTick(() => {
-        if (analytics.value.total_reviews > 0) {
-          createPieChart()
-          createBarChart()
-        }
-      })
-    }, { deep: true })
-    
-    const analyzeSingleReview = async () => {
-      if (!singleReviewText.value.trim()) return
-      
-      analyzing.value = true
-      singleReviewResult.value = null
-      
-      try {
-        const result = await reviewStore.analyzeText(singleReviewText.value)
-        singleReviewResult.value = result
-        toast.success('Review analyzed successfully!')
-      } catch (error) {
-        toast.error('Failed to analyze review: ' + error.message)
-      } finally {
-        analyzing.value = false
-      }
+watch(analytics, () => {
+  nextTick(() => {
+    if (analytics.value.total_reviews > 0) {
+      createPieChart()
+      createBarChart()
     }
-    
-    const onFileSelect = (event) => {
-      uploadResult.value = null
-      selectedFile.value = event.files[0]
-    }
-    
-    const uploadFile = async () => {
-      if (!selectedFile.value) return
-      
-      uploading.value = true
-      uploadResult.value = null
-      
-      try {
-        const result = await reviewStore.uploadFile(selectedFile.value)
-        uploadResult.value = result
-        toast.success('File uploaded and analyzed successfully!')
-        
-        // Clear the file input
-        selectedFile.value = null
-        
-      } catch (error) {
-        toast.error('Upload failed: ' + error.message)
-      } finally {
-        uploading.value = false
-      }
-    }
-    
-    const getSentimentColor = (sentiment) => {
-      const colors = {
-        positive: 'var(--green-500)',
-        negative: 'var(--red-500)',
-        neutral: 'var(--orange-500)'
-      }
-      return colors[sentiment] || 'var(--surface-400)'
-    }
-    
-    const getSentimentIcon = (sentiment) => {
-      const icons = {
-        positive: 'pi pi-thumbs-up',
-        negative: 'pi pi-thumbs-down',
-        neutral: 'pi pi-minus'
-      }
-      return icons[sentiment] || 'pi pi-question'
-    }
+  })
+}, { deep: true })
 
-    return {
-      singleReviewText,
-      singleReviewResult,
-      analyzing,
-      selectedFile,
-      uploading,
-      uploadResult,
-      analyzeSingleReview,
-      onFileSelect,
-      uploadFile,
-      getSentimentColor,
-      getSentimentIcon,
-      analytics,
-      loading,
-      pieChart,
-      barChart,
-      dominantSentiment,
-      dominantPercentage,
-      dominantSentimentColor,
-      dominantSentimentIcon
-    }
+// Action functions
+const analyzeSingleReview = async (): Promise<void> => {
+  if (!singleReviewText.value.trim()) return
+  
+  analyzing.value = true
+  singleReviewResult.value = null
+  
+  try {
+    const result = await reviewStore.analyzeText(singleReviewText.value)
+    singleReviewResult.value = result
+    toast.success('Review analyzed successfully!')
+  } catch (error: any) {
+    toast.error('Failed to analyze review: ' + error.message)
+  } finally {
+    analyzing.value = false
   }
 }
-</script>
 
+interface FileSelectEvent {
+  files: File[]
+}
+
+const onFileSelect = (event: FileSelectEvent): void => {
+  uploadResult.value = null
+  selectedFile.value = event.files[0] || null
+}
+
+const uploadFile = async (): Promise<void> => {
+  if (!selectedFile.value) return
+  
+  uploading.value = true
+  uploadResult.value = null
+  
+  try {
+    const result = await reviewStore.uploadFile(selectedFile.value)
+    uploadResult.value = result
+    toast.success('File uploaded and analyzed successfully!')
+    
+    // Clear the file input
+    selectedFile.value = null
+  } catch (error: any) {
+    toast.error('Upload failed: ' + error.message)
+  } finally {
+    uploading.value = false
+  }
+}
+
+// Utility functions
+const getSentimentColor = (sentiment: string): string => {
+  const colors = {
+    positive: 'var(--green-500)',
+    negative: 'var(--red-500)',
+    neutral: 'var(--orange-500)'
+  }
+  return colors[sentiment as keyof typeof colors] || 'var(--surface-400)'
+}
+
+const getSentimentIcon = (sentiment: string): string => {
+  const icons = {
+    positive: 'pi pi-thumbs-up',
+    negative: 'pi pi-thumbs-down',
+    neutral: 'pi pi-minus'
+  }
+  return icons[sentiment as keyof typeof icons] || 'pi pi-question'
+}
+</script>
 <style scoped>
 .p-fileupload {
   max-width: 400px;

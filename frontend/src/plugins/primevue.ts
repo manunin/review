@@ -1,3 +1,4 @@
+import type { App } from 'vue'
 import PrimeVue from 'primevue/config'
 import 'primevue/resources/themes/aura-light-green/theme.css'
 import 'primevue/resources/primevue.min.css'
@@ -24,7 +25,7 @@ import Avatar from 'primevue/avatar'
 import Chip from 'primevue/chip'
 import Message from 'primevue/message'
 
-export default function (app) {
+export default function (app: App): void {
   app.use(PrimeVue)
   
   // Register components
