@@ -39,6 +39,7 @@
               <div class="flex justify-content-center align-items-center gap-2 p-mb-2 font-medium text-base">
                 <div class="w-12">
                   <FileUpload
+                    ref="fileUploadRef"
                     mode="basic"
                     :auto="false"
                     accept=".csv,.txt,.json"
@@ -68,15 +69,11 @@
     </div>
 
     <!-- Аналитика -->
-
-    <Card class="mt-6">
-      <template #title>
+    <Card v-if="!loading && singleReviewResult" class="mt-6">
+        <template #title>
         <i class="pi pi-chart-line p-mr-2"></i>
-        Results
-      </template>
-      <template #content>
-        <!-- Single Review Result -->
-    <Card v-if="singleReviewResult" class="p-mt-4">
+            Single Review Results
+        </template>
         <template #content>
         <div class="flex align-items-center">
             <i
@@ -85,18 +82,25 @@
             class="p-mr-3"
             ></i>
             <div>
-            <div class="text-xl font-bold">
+            <div class="ml-2 text-xl font-bold">
                 {{ singleReviewResult.sentiment.toUpperCase() }}
             </div>
-            <div class="text-sm">
+            <div class="ml-2 text-sm">
                 Confidence: {{ (singleReviewResult.confidence * 100).toFixed(1) }}%
             </div>
             </div>
         </div>
         </template>
     </Card>
+
+    <Card v-if="!loading && uploadResult" class="mt-6">
+      <template #title>
+        <i class="pi pi-chart-line p-mr-2"></i>
+        Butch Results
+      </template>
+      <template #content>
     <!-- Analytics Summary Cards -->
-    <div class="mt-6 grid p-mt-12" v-if="!loading && analytics">
+    <div class="mt-6 grid p-mt-12">
       <div class="col-12 sm:col-6 md:col-3">
         <Card class="text-center">
           <template #content>
@@ -262,6 +266,7 @@ const uploadResult: Ref<BatchResult | null> = ref(null)
 // Chart refs
 const pieChart: Ref<HTMLCanvasElement | null> = ref(null)
 const barChart: Ref<HTMLCanvasElement | null> = ref(null)
+const fileUploadRef: Ref<any> = ref(null)
 
 // Analytics computed
 const analytics = computed(() => taskStore.getAnalyticsData)
@@ -424,6 +429,7 @@ const analyzeSingleReview = async (): Promise<void> => {
     const result = await taskStore.analyzeSingleText(singleReviewText.value)
     if (result) {
       singleReviewResult.value = result
+      uploadResult.value = null
       toast.success('Review analyzed successfully!')
     } else {
       toast.error('Failed to analyze review - no result returned')
@@ -446,13 +452,14 @@ const onFileSelect = (event: FileSelectEvent): void => {
 
 const uploadFile = async (): Promise<void> => {
   if (!selectedFile.value) return
-  
+
   uploading.value = true
   uploadResult.value = null
   
   try {
     const result = await taskStore.analyzeBatchFile(selectedFile.value)
     if (result) {
+      singleReviewResult.value = null
       uploadResult.value = result
       toast.success('File uploaded and analyzed successfully!')
       
@@ -461,9 +468,8 @@ const uploadFile = async (): Promise<void> => {
         createPieChart()
         createBarChart()
       })
-      
-      // Clear the file input
-      selectedFile.value = null
+
+      clearSelectedFile()
     } else {
       toast.error('Upload failed - no result returned')
     }
@@ -471,6 +477,13 @@ const uploadFile = async (): Promise<void> => {
     toast.error('Upload failed: ' + error.message)
   } finally {
     uploading.value = false
+  }
+}
+
+const clearSelectedFile = (): void => {
+  selectedFile.value = null
+  if (fileUploadRef.value) {
+    fileUploadRef.value.clear()
   }
 }
 
