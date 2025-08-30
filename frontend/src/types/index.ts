@@ -1,4 +1,35 @@
-// API Response Types
+// Export new API types (task-based architecture)
+export type {
+  Task,
+  SingleResult,
+  BatchResult,
+  TaskError,
+  SentimentType,
+  TaskType,
+  TaskStatus,
+  TaskErrorCode,
+  SingleTaskRequest,
+  BatchTaskRequest,
+  TaskResultRequest,
+  ApiResponse,
+  ApiErrorResponse,
+  ValidationError
+} from './api.types'
+
+// Export common types
+export type {
+  LoadingState,
+  ErrorState,
+  AppState,
+  EnvironmentConfig,
+  Nullable,
+  Optional,
+  DeepReadonly,
+  PaginationMeta,
+  PaginatedResponse
+} from './common.types'
+
+// Legacy API Response Types (for backward compatibility)
 export interface ReviewAnalysis {
   sentiment: 'positive' | 'negative' | 'neutral'
   confidence: number
@@ -38,7 +69,7 @@ export interface ReviewStoreState {
   error: string | null
 }
 
-// API Error Response
+// Legacy API Error Response (for backward compatibility)
 export interface ApiError {
   message: string
   details?: Record<string, unknown>

@@ -1,0 +1,130 @@
+## План реализации Mock Data & Development Setup (пункт 5) ✅ COMPLETED
+
+### 1. Создание базовой структуры mock-данных ✅
+- ✅ Создать `src/mocks/` директорию
+- ✅ Создать `src/mocks/index.ts` - главный файл для экспорта всех моков
+- ✅ Создать `src/mocks/config.ts` - конфигурация для моков (задержки, режимы)
+
+### 2. Реализация базовых типов (из пункта 10) ✅
+- ✅ Создать `src/types/api.types.ts` для типов API ответов
+- ✅ Создать `src/types/common.types.ts` для общих типов
+- ✅ Добавить типы для Task, SingleResult, BatchResult, TaskError
+
+### 3. Создание mock API сервиса ✅
+- ✅ Создать `src/mocks/api-mock.service.ts`
+- ✅ Реализовать имитацию всех эндпоинтов из openapi.yml:
+  - `/api/v1/task/run/single`
+  - `/api/v1/task/run/batch` 
+  - `/api/v1/task/result/single`
+  - `/api/v1/task/result/batch`
+
+### 4. Настройка условных API вызовов ✅
+- ✅ Создать `src/services/api.service.ts`
+- ✅ Добавить переключатель между реальным API и mock-данными
+- ✅ Использовать environment переменные для управления режимом
+
+### 5. Имитация реалистичных данных ✅
+- ✅ Создать генераторы данных в `src/mocks/data-generators.ts`:
+      - Задач с разными статусами
+      - Аналитических данных
+      - UUID для task_id
+      - Реалистичных текстов с разными тональностями
+- ✅ Добавить configurable delay в mock сервис
+- ✅ Реализовать различные задержки для разных операций
+- ✅ Добавить имитацию загрузочных состояний
+
+### 6. Создание сценариев ошибок ✅
+- ✅ Реализовать различные типы ошибок (400, 401, 403, 404, 500)
+- ✅ Добавить случайные ошибки для тестирования error handling
+- ✅ Создать переключаемые сценарии ошибок
+
+### 7. Дополнительные компоненты ✅
+- ✅ Создать `src/services/task.service.ts` - высокоуровневый сервис для задач
+- ✅ Создать `src/store/task.store.ts` - Pinia store для работы с задачами
+- ✅ Настроить environment файлы (.env.development, .env.production, .env.example)
+- ✅ Обновить типы в `src/types/index.ts`
+
+## Реализованные возможности
+
+### ✅ Полная имитация API
+- Все эндпоинты из openapi.yml
+- Реалистичные времена отклика
+- Валидация файлов и текста
+- Обработка ошибок
+
+### ✅ Переключение режимов
+- Автоматическое определение по NODE_ENV
+- Ручное переключение через environment переменные
+- Runtime переключение для разработки
+
+### ✅ Генерация данных
+- UUID для task_id
+- Реалистичные sentiment результаты
+- Batch аналитика с правильными процентами
+- Разнообразные тестовые тексты
+
+### ✅ Конфигурация
+- Настраиваемые задержки
+- Управление сценариями ошибок
+- Процент случайных ошибок
+- Environment-specific настройки
+
+### ✅ Development Tools
+- Window utilities для браузерной консоли
+- Debug logging
+- Mock data clearing
+- Development info display
+
+### ✅ Интеграция с приложением
+- Task Store для управления состоянием
+- Service layer с автоматическим переключением
+- TypeScript типизация
+- Error handling и loading states
+
+## Использование
+
+### Включение mock режима:
+```bash
+# В .env.development или .env.local
+VITE_MOCK_API=true
+VITE_DEBUG_MODE=true
+```
+
+### В компонентах:
+```typescript
+import { useTaskStore } from '@/store/task.store'
+
+const taskStore = useTaskStore()
+await taskStore.analyzeSingleText('Отличный продукт!')
+```
+
+### Development утилиты:
+```javascript
+// В browser console
+window.__mockUtils.enableMockMode()
+window.__mockUtils.getDevInfo()
+```
+
+## Файловая структура
+```
+src/
+├── types/
+│   ├── api.types.ts         ✅ API типы из OpenAPI
+│   └── common.types.ts      ✅ Общие типы
+├── mocks/
+│   ├── config.ts           ✅ Конфигурация mock
+│   ├── data-generators.ts  ✅ Генераторы данных
+│   ├── api-mock.service.ts ✅ Mock API сервис
+│   ├── index.ts           ✅ Главный экспорт
+│   └── README.md          ✅ Документация
+├── services/
+│   ├── api.service.ts      ✅ API сервис с переключением
+│   └── task.service.ts     ✅ Task сервис
+├── store/
+│   └── task.store.ts       ✅ Pinia store
+├── .env.development        ✅ Dev конфигурация
+├── .env.production         ✅ Prod конфигурация
+└── .env.example            ✅ Шаблон конфигурации
+```
+
+**Статус: ПОЛНОСТЬЮ РЕАЛИЗОВАН ✅**

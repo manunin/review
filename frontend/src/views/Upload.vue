@@ -240,32 +240,32 @@
 </template>
 
 <script setup lang="ts">
-import { useReviewStore } from '@/store'
+import { useTaskStore } from '@/store'
 import { useToast } from 'vue-toastification'
 import { ref, computed, onMounted, nextTick, watch, type Ref } from 'vue'
 import { Chart, registerables } from 'chart.js'
-import type { ReviewAnalysis, UploadResult } from '@/types'
+import type { SingleResult, BatchResult } from '@/types/api.types'
 
 Chart.register(...registerables)
 
-const reviewStore = useReviewStore()
+const taskStore = useTaskStore()
 const toast = useToast()
 
 // Reactive refs with proper typing
 const singleReviewText: Ref<string> = ref('')
-const singleReviewResult: Ref<ReviewAnalysis | null> = ref(null)
+const singleReviewResult: Ref<SingleResult | null> = ref(null)
 const analyzing: Ref<boolean> = ref(false)
 const selectedFile: Ref<File | null> = ref(null)
 const uploading: Ref<boolean> = ref(false)
-const uploadResult: Ref<UploadResult | null> = ref(null)
+const uploadResult: Ref<BatchResult | null> = ref(null)
 
 // Chart refs
 const pieChart: Ref<HTMLCanvasElement | null> = ref(null)
 const barChart: Ref<HTMLCanvasElement | null> = ref(null)
 
 // Analytics computed
-const analytics = computed(() => reviewStore.analytics)
-const loading = computed(() => reviewStore.loading)
+const analytics = computed(() => taskStore.getAnalyticsData)
+const loading = computed(() => taskStore.isLoading)
 
 const dominantSentiment = computed((): string => {
   if (!analytics.value || analytics.value.total_reviews === 0) return 'neutral'
@@ -395,7 +395,7 @@ const createBarChart = (): void => {
 
 // Lifecycle hooks
 onMounted(async (): Promise<void> => {
-  await reviewStore.fetchAnalytics()
+  // Task store automatically provides analytics from batch results
   nextTick(() => {
     if (analytics.value.total_reviews > 0) {
       createPieChart()
@@ -421,9 +421,13 @@ const analyzeSingleReview = async (): Promise<void> => {
   singleReviewResult.value = null
   
   try {
-    const result = await reviewStore.analyzeText(singleReviewText.value)
-    singleReviewResult.value = result
-    toast.success('Review analyzed successfully!')
+    const result = await taskStore.analyzeSingleText(singleReviewText.value)
+    if (result) {
+      singleReviewResult.value = result
+      toast.success('Review analyzed successfully!')
+    } else {
+      toast.error('Failed to analyze review - no result returned')
+    }
   } catch (error: any) {
     toast.error('Failed to analyze review: ' + error.message)
   } finally {
@@ -447,12 +451,22 @@ const uploadFile = async (): Promise<void> => {
   uploadResult.value = null
   
   try {
-    const result = await reviewStore.uploadFile(selectedFile.value)
-    uploadResult.value = result
-    toast.success('File uploaded and analyzed successfully!')
-    
-    // Clear the file input
-    selectedFile.value = null
+    const result = await taskStore.analyzeBatchFile(selectedFile.value)
+    if (result) {
+      uploadResult.value = result
+      toast.success('File uploaded and analyzed successfully!')
+      
+      // Update charts with new data
+      nextTick(() => {
+        createPieChart()
+        createBarChart()
+      })
+      
+      // Clear the file input
+      selectedFile.value = null
+    } else {
+      toast.error('Upload failed - no result returned')
+    }
   } catch (error: any) {
     toast.error('Upload failed: ' + error.message)
   } finally {

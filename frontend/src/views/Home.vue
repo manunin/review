@@ -60,8 +60,8 @@
 </template>
 
 <script setup lang="ts">
-import { useReviewStore } from '@/store'
-import { onMounted } from 'vue'
+import { useTaskStore } from '@/store'
+import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 interface Feature {
@@ -72,7 +72,10 @@ interface Feature {
 }
 
 const router = useRouter()
-const reviewStore = useReviewStore()
+const taskStore = useTaskStore()
+
+// Get analytics data from task store
+const analytics = computed(() => taskStore.getAnalyticsData)
 
 const features: Feature[] = [
   {
@@ -96,7 +99,8 @@ const features: Feature[] = [
 ]
 
 onMounted(async (): Promise<void> => {
-  await reviewStore.fetchAnalytics()
+  // No need to fetch analytics - task store provides computed analytics from batch results
+  // Analytics will be available after batch processing is completed
 })
 </script>
 

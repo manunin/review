@@ -19,13 +19,12 @@
 
 ### 3. Service Layer Implementation (Point 10, 14)
 - [ ] Create src/services/api.service.ts for API client
-- [ ] **Mock all backend endpoints since backend is not ready**
-- [ ] Implement JWT token management in API service (mocked)
-- [ ] Create src/services/review.service.ts for review operations (with mock data)
-- [ ] Create src/services/analytics.service.ts for analytics (with mock data)
+- [ ] **Mock all backend endpoints since backend is not ready** (just naive mock, more mock implementation will be in the 5)
+- [ ] Create src/services/task.service.ts for task operations (with mock data)
 - [ ] Move all API calls from store to service layer
-- [ ] Add request/response interceptors for error handling
 - [ ] **Create mock data generators for realistic testing**
+
+### 3.1 - [ ] Implement JWT token management in API service (adding token to header, processing token errors from backend, refresh token in case of exp)
 
 ### 4. Global Error Handling (Point 17)
 - [ ] Implement app.config.errorHandler in main.js
@@ -50,6 +49,7 @@
 - [ ] Integrate logging in all functions (start/completion)
 - [ ] **Add mock API call logging in debug mode**
 - [ ] Log all state changes with old/new values
+- [ ] Add request/response interceptors for error handling
 
 ### 7. Testing Infrastructure (Point 8, 9)
 - [ ] Setup Vitest configuration
