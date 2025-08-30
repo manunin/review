@@ -94,20 +94,8 @@ app.listen(port, () => {
 });
 EOF
 
-# Создаем ZIP-архив из deploy-temp
-echo "� Создание ZIP-архива..."
+# Create ZIP archive from deploy-temp
+echo "📦 Creating ZIP archive..."
 cd deploy-temp
 zip -r ../frontend-deploy.zip . -x "*.DS_Store"
 cd ..
-
-# Очищаем временную папку
-rm -rf deploy-temp
-
-echo "✅ Деплой готов!"
-echo "📦 Файл для загрузки: frontend-deploy.zip"
-echo ""
-echo "Инструкция для деплоя:"
-echo "1. Перейдите в AWS Elastic Beanstalk консоль"
-echo "2. Выберите ваше приложение"
-echo "3. Нажмите 'Upload and Deploy'"
-echo "4. Загрузите файл frontend-deploy.zip"
