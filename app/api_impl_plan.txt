@@ -32,22 +32,22 @@ Based on `app/CONTEXT.MD` guidelines and `api/openapi.yml` specification.
   - HTTP status code mapping
 
 ### 1.2 Database Layer
-- [ ] **`app/infra/db/base.py`** - Database engine and session factory
+- [v] **`app/infra/db/base.py`** - Database engine and session factory
   - Async SQLAlchemy setup
   - Connection pooling configuration
   - Lifespan management for DB connections
 
-- [ ] **`app/infra/db/models.py`** - ORM models
+- [v] **`app/infra/db/models.py`** - ORM models
   - Task model (UUID, type, status, timestamps, user_id, result)
   - User session tracking model
   - Proper indexes and constraints
 
-- [ ] **`app/infra/db/repo.py`** - Repository pattern implementation
+- [v] **`app/infra/db/repo.py`** - Repository pattern implementation
   - TaskRepository with async methods
   - CRUD operations for tasks
   - User-specific task queries
 
-- [ ] **`app/infra/db/migrations/`** - Alembic migrations
+- [v] **`app/infra/db/migrations/`** - Alembic migrations
   - Initial database schema
   - Proper naming conventions
   - Index creation scripts

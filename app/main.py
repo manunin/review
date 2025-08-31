@@ -24,6 +24,7 @@ from app.core.security import (
     SecurityHeadersMiddleware,
     setup_cors,
 )
+from app.infra.db.base import close_db, init_db
 
 # Configure logging first
 configure_logging()
@@ -36,10 +37,16 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Smart Review Analyzer API", extra={"version": "1.0.0"})
     
-    # TODO: Initialize services here:
-    # engine, session_factory = await create_engine_session(settings.database_url)
-    # app.state.db_engine = engine  
-    # app.state.db_session_factory = session_factory
+    # Initialize database
+    try:
+        await init_db(settings.database_url)
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
+        # For now, continue without database for basic functionality
+        # raise e  # Uncomment when database is required
+    
+    # TODO: Initialize other services here:
     # app.state.redis = await create_redis_pool(settings.redis_url)
     # app.state.ml_model = await load_ml_model()
     
@@ -47,6 +54,13 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     logger.info("Shutting down Smart Review Analyzer API")
+    
+    # Cleanup database connections
+    try:
+        await close_db()
+        logger.info("Database connections closed")
+    except Exception as e:
+        logger.error(f"Error closing database connections: {e}")
     
     # TODO: Cleanup resources here:
     # await app.state.db_engine.dispose()

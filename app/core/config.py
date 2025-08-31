@@ -39,9 +39,10 @@ class Settings(BaseSettings):
         default="postgresql+asyncpg://postgres:password@localhost:5432/review_db",
         description="PostgreSQL connection URL"
     )
-    db_pool_size: int = 10
-    db_max_overflow: int = 20
-    db_pool_timeout: int = 30
+    database_echo: bool = False
+    database_pool_size: int = 10
+    database_max_overflow: int = 20
+    database_pool_timeout: int = 30
     
     # Redis (Task Queue)
     redis_url: str = Field(
