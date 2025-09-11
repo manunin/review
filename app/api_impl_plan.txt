@@ -58,37 +58,32 @@ Based on `app/CONTEXT.MD` guidelines and `api/openapi.yml` specification.
   - Celery/RQ/Arq integration for async processing
   - Task priority and retry mechanisms
 
-- [ ] **`app/infra/storage/`** - File storage abstraction
-  - Temporary file handling for uploads
-  - File validation and parsing utilities
-  - Cleanup mechanisms
-
 ---
 
 ## 2. Domain Layer Implementation
 
 ### 2.1 Task Management Module
-- [ ] **`app/tasks/models.py`** - Domain models
+- [v] **`app/tasks/models.py`** - Domain models
   - Task entity with business rules
   - Task status transitions
   - Result value objects (SingleResult, BatchResult)
 
-- [ ] **`app/tasks/schemas.py`** - Pydantic schemas
+- [v] **`app/tasks/schemas.py`** - Pydantic schemas
   - Request/response models matching OpenAPI spec
   - Validation rules (text max 512 chars, file size limits)
   - Input sanitization
 
-- [ ] **`app/tasks/service.py`** - Business logic
+- [v] **`app/tasks/service.py`** - Business logic
   - Task creation and management
   - Status tracking and updates
   - Result aggregation for batch processing
 
-- [ ] **`app/tasks/dependencies.py`** - FastAPI dependencies
+- [v] **`app/tasks/dependencies.py`** - FastAPI dependencies
   - Task service injection
   - User ID extraction
   - Database session management
 
-- [ ] **`app/tasks/exceptions.py`** - Task-specific exceptions
+- [v] **`app/tasks/exceptions.py`** - Task-specific exceptions
   - TaskNotFound, InvalidTaskStatus
   - FileProcessingError, UnsupportedFormat
   - Error code mapping ("01", "02", "03")
@@ -99,46 +94,6 @@ Based on `app/CONTEXT.MD` guidelines and `api/openapi.yml` specification.
   - Sentiment types (positive, negative, neutral)
   - File format constants
 
-### 2.2 Analysis Module
-- [ ] **`app/analysis/service.py`** - ML analysis service
-  - Single text sentiment analysis
-  - Batch file processing
-  - Confidence score calculation
-  - Integration with ML models
-
-- [ ] **`app/analysis/parsers.py`** - File parsing utilities
-  - CSV, TXT, JSON file parsers
-  - Data validation and cleaning
-  - Error handling for malformed files
-
----
-
-## 3. API Layer Implementation
-
-### 3.1 Task Results Endpoints
-- [ ] **`app/api/v1/routers/task_results.py`**
-  - `POST /api/v1/task/result/single` - Get last single task result
-  - `POST /api/v1/task/result/batch` - Get last batch task result
-  - Proper error handling (400, 404, 500)
-  - Response model validation
-
-### 3.2 Task Execution Endpoints
-- [ ] **`app/api/v1/routers/task_execution.py`**
-  - `POST /api/v1/task/run/single` - Submit single text analysis
-  - `POST /api/v1/task/run/batch` - Submit batch file analysis
-  - File upload handling with size/format validation
-  - Async task queuing
-
-### 3.3 API Infrastructure
-- [ ] **`app/api/v1/deps.py`** - Common dependencies
-  - Database session provider
-  - Service layer injection
-  - User authentication/identification
-
-- [ ] **`app/api/v1/errors.py`** - API error handlers
-  - Global exception handlers
-  - Validation error formatting
-  - HTTP status code mapping
 
 ---
 
@@ -167,7 +122,7 @@ Based on `app/CONTEXT.MD` guidelines and `api/openapi.yml` specification.
 ## 5. Application Bootstrap
 
 ### 5.1 FastAPI Application
-- [ ] **`app/main.py`** - Application factory
+- [v] **`app/main.py`** - Application factory
   - FastAPI app creation with lifespan
   - Middleware setup (CORS, logging, security headers)
   - Router registration

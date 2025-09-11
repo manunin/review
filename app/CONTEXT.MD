@@ -54,7 +54,6 @@ app/
   infra/
     db/
       base.py       # engine/sessionmaker, lifespan
-      models.py     # ORM tables (SQLAlchemy 2)
       repo.py       # repositories
       migrations/   # alembic
     cache.py        # redis/asgi-cache

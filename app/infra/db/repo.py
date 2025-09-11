@@ -12,11 +12,12 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import desc, select, update
+from sqlalchemy import desc, select, update, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.infra.db.models import Task, TaskStatus, TaskType, UserSession
+from app.tasks.models import Task, TaskStatus, TaskType
+from app.infra.db.sessions import UserSession
 
 
 class TaskRepository:
@@ -35,7 +36,7 @@ class TaskRepository:
         self,
         task_type: TaskType,
         user_id: str,
-        extra_data: Optional[Dict[str, Any]] = None,
+        extra_data: Optional[Dict[str, Any]] = None
     ) -> Task:
         """
         Create a new task.
@@ -43,17 +44,29 @@ class TaskRepository:
         Args:
             task_type: Type of task (single/batch)
             user_id: User identifier
-            extra_data: Additional task metadata
+            extra_data: Additional task metadata (contains text for single, file_path for batch)
             
         Returns:
             Created task instance
         """
-        task = Task(
-            type=task_type,
-            user_id=user_id,
-            status=TaskStatus.ACCEPTED,
-            extra_data=extra_data or {},
-        )
+        import time
+        
+        # Prepare task data
+        task_data = {
+            "type": task_type,
+            "user_id": user_id,
+            "status": TaskStatus.accepted,
+            "start": int(time.time()),
+        }
+        
+        # Add type-specific data from extra_data
+        if extra_data:
+            if task_type == TaskType.single and "text" in extra_data:
+                task_data["text"] = extra_data["text"]
+            elif task_type == TaskType.batch and "file_path" in extra_data:
+                task_data["file_path"] = extra_data["file_path"]
+        
+        task = Task(**task_data)
         
         self.session.add(task)
         await self.session.flush()  # Get the ID without committing
@@ -84,6 +97,23 @@ class TaskRepository:
             Task instance or None if not found
         """
         stmt = select(Task).where(Task.task_id == task_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+    
+    async def get_user_task_by_id(self, task_id: uuid.UUID, user_id: str) -> Optional[Task]:
+        """
+        Get task by external task ID and verify it belongs to the user.
+        
+        Args:
+            task_id: External task UUID
+            user_id: User identifier that should own the task
+            
+        Returns:
+            Task instance or None if not found or doesn't belong to user
+        """
+        stmt = select(Task).where(
+            and_(Task.task_id == task_id, Task.user_id == user_id)
+        )
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
     
@@ -144,7 +174,7 @@ class TaskRepository:
             select(Task)
             .where(Task.user_id == user_id)
             .where(Task.type == task_type)
-            .order_by(desc(Task.created_at))
+            .order_by(desc(Task.start))
             .limit(1)
         )
         
@@ -192,7 +222,7 @@ class TaskRepository:
         self,
         task_id: int,
         result: Dict[str, Any],
-        status: TaskStatus = TaskStatus.READY,
+        status: TaskStatus = TaskStatus.ready,
         end_time: Optional[datetime] = None,
     ) -> Optional[Task]:
         """
@@ -246,7 +276,7 @@ class TaskRepository:
         """
         update_data: Dict[str, Any] = {
             "error": error,
-            "status": TaskStatus.ERROR,
+            "status": TaskStatus.error,
         }
         
         if end_time:
@@ -254,6 +284,31 @@ class TaskRepository:
         else:
             update_data["end_time"] = datetime.utcnow()
         
+        stmt = (
+            update(Task)
+            .where(Task.id == task_id)
+            .values(**update_data)
+            .returning(Task)
+        )
+        
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+    
+    async def update(
+        self,
+        task_id: int,
+        update_data: Dict[str, Any]
+    ) -> Optional[Task]:
+        """
+        Generic update method for task.
+        
+        Args:
+            task_id: Internal task ID
+            update_data: Data to update
+            
+        Returns:
+            Updated task instance or None if not found
+        """
         stmt = (
             update(Task)
             .where(Task.id == task_id)
@@ -289,33 +344,53 @@ class TaskRepository:
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
     
-    async def count_user_tasks(
+    async def count_user_tasks_by_type(
         self,
         user_id: str,
-        task_type: Optional[TaskType] = None,
-        status: Optional[TaskStatus] = None,
+        task_type: TaskType
     ) -> int:
         """
-        Count tasks for a user.
+        Count user's tasks by type.
         
         Args:
             user_id: User identifier
-            task_type: Filter by task type (optional)
-            status: Filter by task status (optional)
+            task_type: Task type to count
             
         Returns:
-            Number of tasks matching criteria
+            Number of tasks
         """
-        stmt = select(Task).where(Task.user_id == user_id)
+        query = select(func.count(Task.id)).where(
+            and_(
+                Task.user_id == user_id,
+                Task.type == task_type
+            )
+        )
+        result = await self.session.execute(query)
+        return result.scalar() or 0
+    
+    async def count_user_tasks_by_status(
+        self,
+        user_id: str,
+        status: TaskStatus
+    ) -> int:
+        """
+        Count user's tasks by status.
         
-        if task_type:
-            stmt = stmt.where(Task.type == task_type)
-        
-        if status:
-            stmt = stmt.where(Task.status == status)
-        
-        result = await self.session.execute(stmt)
-        return len(list(result.scalars().all()))
+        Args:
+            user_id: User identifier
+            status: Task status to count
+            
+        Returns:
+            Number of tasks
+        """
+        query = select(func.count(Task.id)).where(
+            and_(
+                Task.user_id == user_id,
+                Task.status == status
+            )
+        )
+        result = await self.session.execute(query)
+        return result.scalar() or 0
 
 
 class UserSessionRepository:

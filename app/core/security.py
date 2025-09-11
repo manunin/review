@@ -64,6 +64,27 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         return response
 
 
+class SanitizationMiddleware(BaseHTTPMiddleware):
+    """Middleware for sanitizing incoming request data."""
+    
+    async def dispatch(self, request: Request, call_next) -> Response:
+        # Only sanitize JSON body for POST requests
+        if request.method == "POST" and "application/json" in request.headers.get("content-type", ""):
+            body = await request.body()
+            if body:
+                import json
+                try:
+                    data = json.loads(body)
+                    if isinstance(data, dict):
+                        sanitized_data = {k: sanitize_text(v) if isinstance(v, str) else v for k, v in data.items()}
+                        request._body = json.dumps(sanitized_data).encode('utf-8')
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    # If parsing fails, continue without sanitization
+                    raise HTTPException(status_code=422, detail="Invalid JSON")
+
+        response = await call_next(request)
+        return response
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Middleware for adding security headers."""
     

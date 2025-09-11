@@ -1,14 +1,13 @@
 """
-Smart Review Analyzer - Main FastAPI Application
+Review Analysis API - Main FastAPI Application
 
-This is the main entry point for the Smart Review Analyzer API.
+Implements the API specification from api/openapi.yml.
+Task-based architecture for sentiment analysis.
 """
 
 from contextlib import asynccontextmanager
-from typing import Any
 
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.exceptions import (
@@ -25,6 +24,7 @@ from app.core.security import (
     setup_cors,
 )
 from app.infra.db.base import close_db, init_db
+from app.tasks.router import router as task_router
 
 # Configure logging first
 configure_logging()
@@ -35,7 +35,7 @@ logger = get_logger(__name__)
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Startup
-    logger.info("Starting Smart Review Analyzer API", extra={"version": "1.0.0"})
+    logger.info("Starting Review Analysis API", extra={"version": "1.0.0"})
     
     # Initialize database
     try:
@@ -70,11 +70,31 @@ async def lifespan(app: FastAPI):
 
 # Initialize FastAPI app
 app = FastAPI(
-    title=settings.app_name,
-    description="AI-powered review analysis platform for sentiment detection",
-    version="1.0.0",  # TODO: get from settings.version when available
-    docs_url="/docs" if settings.environment != "production" else None,
-    redoc_url="/redoc" if settings.environment != "production" else None,
+    title="Review Analysis API",
+    description="""Task-based API for review analysis with support for sentiment analysis.
+
+The system works with a task-based architecture:
+- Submit analysis tasks (single text or batch file)
+- Retrieve results of completed tasks
+- All operations use POST method for consistency
+- User identification via cookies""",
+    version="1.0.0",
+    contact={
+        "name": "Review Analysis System",
+        "url": "https://github.com/manunin/review",
+    },
+    license_info={
+        "name": "MIT",
+    },
+    docs_url="/api/v1/docs",
+    redoc_url="/api/v1/redoc",
+    openapi_url="/api/v1/openapi.json",
+    servers=[
+        {
+            "url": "/api/v1",
+            "description": "Development server"
+        }
+    ],
     lifespan=lifespan,
 )
 
@@ -90,63 +110,26 @@ app.add_exception_handler(ValidationError, validation_exception_handler)
 app.add_exception_handler(BaseAppException, app_exception_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 
-# Include API routes (placeholder for now)
-# from app.api.routes import api_router
-# app.include_router(api_router, prefix="/api/v1")
-
-# Mount static files (for file uploads, model files, etc.)
-# app.mount("/static", StaticFiles(directory="static"), name="static")
+# Include API routes according to OpenAPI specification
+app.include_router(task_router, prefix="/api/v1")
 
 
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "healthy", "version": "1.0.0"}
+
+
+# Root endpoint
 @app.get("/")
-async def root() -> dict[str, Any]:
-    """Root endpoint providing API information."""
+async def root():
+    """Root endpoint with API information."""
     return {
-        "message": "Welcome to Smart Review Analyzer API",
+        "name": "Review Analysis API",
         "version": "1.0.0",
-        "docs": "/docs",
-        "health": "/api/v1/health"
-    }
-
-
-@app.get("/healthz")
-async def health_check_basic() -> dict[str, Any]:
-    """Basic health check endpoint."""
-    return {
-        "status": "healthy",
-        "service": settings.app_name,
-        "version": "1.0.0",
-    }
-
-
-@app.get("/readyz") 
-async def health_check_ready() -> dict[str, Any]:
-    """Readiness check endpoint (DB, Redis, ML model)."""
-    # TODO: Add actual health checks for:
-    # - Database connection
-    # - Redis connection
-    # - ML model availability
-    return {
-        "status": "ready",
-        "service": settings.app_name,
-        "version": "1.0.0",
-        "environment": settings.environment,
-        "checks": {
-            "database": "ok",  # TODO: implement actual check
-            "redis": "ok",     # TODO: implement actual check  
-            "ml_model": "ok"   # TODO: implement actual check
-        }
-    }
-
-
-@app.get("/api/v1/health")
-async def health_check() -> dict[str, Any]:
-    """Legacy health check endpoint."""
-    return {
-        "status": "healthy", 
-        "service": settings.app_name,
-        "version": "1.0.0",
-        "environment": settings.environment,
+        "docs": "/api/v1/docs",
+        "openapi": "/api/v1/openapi.json"
     }
 
 

@@ -25,7 +25,8 @@ print(f"   📋 Таблицы в metadata: {list(Base.metadata.tables.keys())}"
 print(f"   📊 Количество таблиц: {len(Base.metadata.tables)}")
 
 print("\n2. ⚡ Импортируем модели...")
-from app.infra.db.models import Task, UserSession
+from app.tasks.models import Task
+from app.infra.db.sessions import UserSession
 
 print("3. Состояние metadata ПОСЛЕ импорта моделей:")
 print(f"   📋 Таблицы в metadata: {list(Base.metadata.tables.keys())}")
@@ -49,7 +50,5 @@ for table_name, table in Base.metadata.tables.items():
         print(f"     • {column.name}: {column.type} {nullable}{pk}{fk}")
 
 print("\n" + "=" * 60)
-print("✅ Вывод: Импорт 'from app.infra.db.models import Task, UserSession'")
-print("   автоматически регистрирует модели в Base.metadata через")
-print("   механизм DeclarativeBase SQLAlchemy!")
-print("\n🎯 Это и есть ответ на вопрос - импорт используется неявно!")
+print("✅ Вывод: Импорт 'from app.tasks.models import Task' и 'from app.infra.db.sessions import UserSession'")
+print("   автоматически регистрирует модели в Base.metadata")

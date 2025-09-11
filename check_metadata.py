@@ -12,7 +12,8 @@ from app.infra.db.base import Base
 print(f"   Таблицы в metadata: {list(Base.metadata.tables.keys())}")
 
 print("\n2. Импортируем модели...")
-from app.infra.db.models import Task, UserSession
+from app.tasks.models import Task
+from app.infra.db.sessions import UserSession
 
 print("3. Состояние metadata ПОСЛЕ импорта моделей:")
 print(f"   Таблицы в metadata: {list(Base.metadata.tables.keys())}")
