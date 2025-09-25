@@ -13,7 +13,7 @@
               v-model="singleReviewText"
               placeholder="Type or paste a review here..."
               :rows="4"
-              :disabled="analyzing"
+              :disabled="analyzing || taskPolling.isSingleInputBlocked.value"
               class="w-full p-mb-3"
               style="resize: none"
             />
@@ -21,10 +21,19 @@
               label="Analyze Sentiment"
               icon="pi pi-search"
               :loading="analyzing"
-              :disabled="!singleReviewText.trim()"
+              :disabled="!singleReviewText.trim() || taskPolling.isSingleInputBlocked.value"
               @click="analyzeSingleReview"
               class="p-mt-2"
             />
+            <!-- Polling status message -->
+            <div v-if="taskPolling.isSinglePolling.value" class="p-mt-3">
+              <Message severity="info" :closable="false">
+                <div class="flex align-items-center">
+                  <ProgressSpinner style="width: 20px; height: 20px" strokeWidth="4" />
+                  <span class="p-ml-2">Task is being processed... Checking status every 5 seconds.</span>
+                </div>
+              </Message>
+            </div>
           </template>
         </Card>
       </div>
@@ -45,7 +54,7 @@
                     accept=".csv,.txt,.json"
                     :maxFileSize="52428800"
                     @select="onFileSelect"
-                    :disabled="uploading"
+                    :disabled="uploading || taskPolling.isBatchInputBlocked.value"
                     chooseLabel="Choose File"
                     class="w-full font-medium text-base"
                   />
@@ -54,10 +63,19 @@
                   label="Upload and Analyze"
                   icon="pi pi-cloud-upload"
                   :loading="uploading"
-                  :disabled="!selectedFile"
+                  :disabled="!selectedFile || taskPolling.isBatchInputBlocked.value"
                   @click="uploadFile"
                   class="w-12 font-medium text-base"
                 />
+              </div>
+              <!-- Polling status message -->
+              <div v-if="taskPolling.isBatchPolling.value" class="p-mt-3">
+                <Message severity="info" :closable="false">
+                  <div class="flex align-items-center">
+                    <ProgressSpinner style="width: 20px; height: 20px" strokeWidth="4" />
+                    <span class="p-ml-2">Batch task is being processed... Checking status every 5 seconds.</span>
+                  </div>
+                </Message>
               </div>
               <div class="mt-2 p-mt-2 text-base text-color-secondary">
                 Supported formats: CSV, TXT, JSON (Max size: 50MB)
@@ -245,6 +263,7 @@
 
 <script setup lang="ts">
 import { useTaskStore } from '@/store'
+import { useTaskPolling } from '@/composables/useTaskPolling'
 import { useToast } from 'vue-toastification'
 import { ref, computed, onMounted, nextTick, watch, type Ref } from 'vue'
 import { Chart, registerables } from 'chart.js'
@@ -253,14 +272,13 @@ import type { SingleResult, BatchResult } from '@/types/api.types'
 Chart.register(...registerables)
 
 const taskStore = useTaskStore()
+const taskPolling = useTaskPolling()
 const toast = useToast()
 
 // Reactive refs with proper typing
 const singleReviewText: Ref<string> = ref('')
 const singleReviewResult: Ref<SingleResult | null> = ref(null)
-const analyzing: Ref<boolean> = ref(false)
 const selectedFile: Ref<File | null> = ref(null)
-const uploading: Ref<boolean> = ref(false)
 const uploadResult: Ref<BatchResult | null> = ref(null)
 
 // Chart refs
@@ -271,6 +289,8 @@ const fileUploadRef: Ref<any> = ref(null)
 // Analytics computed
 const analytics = computed(() => taskStore.getAnalyticsData)
 const loading = computed(() => taskStore.isLoading)
+const analyzing = computed(() => taskStore.isLoading || taskPolling.isSinglePolling.value)
+const uploading = computed(() => taskStore.isLoading || taskPolling.isBatchPolling.value)
 
 const dominantSentiment = computed((): string => {
   if (!analytics.value || analytics.value.total_reviews === 0) return 'neutral'
@@ -422,22 +442,21 @@ watch(analytics, () => {
 const analyzeSingleReview = async (): Promise<void> => {
   if (!singleReviewText.value.trim()) return
   
-  analyzing.value = true
   singleReviewResult.value = null
   
   try {
-    const result = await taskStore.analyzeSingleText(singleReviewText.value)
+    const result = await taskPolling.analyzeSingleTextWithPolling(singleReviewText.value)
     if (result) {
       singleReviewResult.value = result
       uploadResult.value = null
       toast.success('Review analyzed successfully!')
+    } else if (taskPolling.isSinglePolling.value) {
+      toast.info('Review submitted for processing. You will see results when ready.')
     } else {
       toast.error('Failed to analyze review - no result returned')
     }
   } catch (error: any) {
     toast.error('Failed to analyze review: ' + error.message)
-  } finally {
-    analyzing.value = false
   }
 }
 
@@ -453,11 +472,10 @@ const onFileSelect = (event: FileSelectEvent): void => {
 const uploadFile = async (): Promise<void> => {
   if (!selectedFile.value) return
 
-  uploading.value = true
   uploadResult.value = null
   
   try {
-    const result = await taskStore.analyzeBatchFile(selectedFile.value)
+    const result = await taskPolling.analyzeBatchFileWithPolling(selectedFile.value)
     if (result) {
       singleReviewResult.value = null
       uploadResult.value = result
@@ -470,13 +488,13 @@ const uploadFile = async (): Promise<void> => {
       })
 
       clearSelectedFile()
+    } else if (taskPolling.isBatchPolling.value) {
+      toast.info('File submitted for processing. You will see analytics when ready.')
     } else {
       toast.error('Upload failed - no result returned')
     }
   } catch (error: any) {
     toast.error('Upload failed: ' + error.message)
-  } finally {
-    uploading.value = false
   }
 }
 
@@ -487,7 +505,30 @@ const clearSelectedFile = (): void => {
   }
 }
 
-// Utility functions
+// Watchers for store state changes
+watch(() => taskStore.lastSingleResult, (newResult) => {
+  if (newResult && !taskPolling.isSinglePolling.value) {
+    singleReviewResult.value = newResult
+    uploadResult.value = null
+    toast.success('Review analysis completed!')
+  }
+})
+
+watch(() => taskStore.lastBatchResult, (newResult) => {
+  if (newResult && !taskPolling.isBatchPolling.value) {
+    singleReviewResult.value = null
+    uploadResult.value = newResult
+    toast.success('Batch analysis completed!')
+    
+    // Update charts with new data
+    nextTick(() => {
+      createPieChart()
+      createBarChart()
+    })
+  }
+})
+
+// Helper functions
 const getSentimentColor = (sentiment: string): string => {
   const colors = {
     positive: 'var(--green-500)',

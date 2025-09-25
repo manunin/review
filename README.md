@@ -1,94 +1,123 @@
-# viewman 🔍✨
+# Review Analysis Platform 🔍✨
 
-> AI-powered review analysis platform for sentiment detection and valuable insights extraction
+> Task-based API for sentiment analysis with asynchronous processing and modern web interface
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python](https://img.shields.io/badge/python-v3.8+-blue.svg)](https://www.python.org/downloads/)
-[![ML Ready](https://img.shields.io/badge/ML-Ready-green.svg)](https://scikit-learn.org/)
+[![Python](https://img.shields.io/badge/python-v3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Vue.js](https://img.shields.io/badge/Vue.js-35495E?logo=vue.js)](https://vuejs.org/)
 
 ## 📋 Project Overview
 
-**Viewman** is an intelligent web platform for review analysis using machine learning methods. The system allows users to upload text reviews about products or services and automatically analyzes their sentiment, providing detailed statistics and insights.
+**Review Analysis Platform** is a modern web application for sentiment analysis of text reviews. The system implements a task-based architecture with asynchronous processing, allowing users to analyze single reviews or batch process files, with real-time status updates and comprehensive results.
 
 ### 🎯 Key Features
 
-- **Sentiment Analysis**: Automatic detection of emotional tone in reviews (positive, negative, neutral)
-- **Batch Processing**: Upload and analyze multiple reviews simultaneously
-- **Interactive Statistics**: Results visualization with charts and diagrams
-- **Data Export**: Export analysis results in various formats
-- **ML Model**: Trained model for accurate sentiment detection in multiple languages
+- **Task-Based Architecture**: Asynchronous processing with status tracking (accepted → queued → ready)
+- **Single Text Analysis**: Real-time sentiment analysis of individual reviews
+- **Batch File Processing**: Upload and analyze CSV, TXT, JSON files with multiple reviews
+- **Real-Time Polling**: Frontend automatically polls for task completion with UI blocking
+- **Mock Worker System**: Background worker for simulating ML processing pipeline
+- **PostgreSQL Database**: Persistent storage with comprehensive task tracking
+- **Docker Ready**: Full containerization with docker-compose setup
+- **OpenAPI Compliant**: Comprehensive API documentation with Swagger UI
 
 ## 🚀 Technology Stack
 
 ### Backend
-- **Python 3.8+** - Core programming language
-- **FastAPI/Flask** - Web framework for API
-- **scikit-learn** - Machine learning library
-- **NLTK/spaCy** - Natural language processing
-- **pandas** - Data analysis and processing
-- **SQLAlchemy** - ORM for database operations
+- **Python 3.11** - Modern Python with async support
+- **FastAPI** - High-performance async web framework
+- **SQLAlchemy 2.0** - Modern ORM with async support
+- **Alembic** - Database migrations
+- **Pydantic** - Data validation and serialization
+- **Mock Worker** - Background task processing simulation
 
-### Frontend
-- **Vue.js** - User interface
-- **Chart.js** - Data visualization
-- **Material-UI/Tailwind CSS** - UI components and styling
-- **Axios** - HTTP client for API requests
+### Frontend  
+- **Vue.js 3** - Modern reactive framework with Composition API
+- **Vite** - Fast build tool and dev server
+- **PrimeVue** - Comprehensive UI component library
+- **Pinia** - State management for Vue 3
+- **TypeScript** - Type-safe development
+- **Axios** - HTTP client for API communication
 
-### Database
-- **PostgreSQL** - Primary database
-- **Redis** - Results caching
+### Database & Infrastructure
+- **PostgreSQL 15** - Reliable relational database
+- **Docker & Docker Compose** - Containerization
+- **Nginx** - Reverse proxy and static file serving
 
-### ML/AI
-- **Transformers** - Pre-trained models for NLP
-- **BERT/RuBERT** - Models for sentiment analysis
-- **Joblib** - ML model serialization
+### Architecture Patterns
+- **Task-Based Processing** - Asynchronous job processing
+- **Domain-Driven Design** - Clear separation of concerns
+- **Repository Pattern** - Data access abstraction
+- **Composable Pattern** - Reusable UI logic (Vue 3)
 
 ## 📦 Installation and Setup
 
 ### Prerequisites
 
 ```bash
-# Python 3.8 or higher
+# Docker and Docker Compose
+docker --version
+docker-compose --version
+
+# For local development (optional):
+# Python 3.11+
 python --version
 
-# Node.js 14+ (for frontend)
+# Node.js 18+ (for frontend development)
 node --version
-
-# PostgreSQL
-psql --version
 ```
 
-### Clone Repository
+### Quick Start with Docker
 
 ```bash
+# Clone repository
 git clone https://github.com/manunin/review.git
 cd review
+
+# Copy environment configuration
+cp .env.example .env
+
+# Build and start all services
+make docker-up
+# or manually:
+# docker-compose up --build -d
+
+# Check services status
+docker-compose ps
 ```
 
-### Backend Setup
+The application will be available at:
+- **Frontend**: http://localhost:3001
+- **Backend API**: http://localhost:8000  
+- **API Documentation**: http://localhost:8000/docs
+
+### Local Development Setup
+
+#### Backend Development
 
 ```bash
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # for macOS/Linux
-# or
-venv\Scripts\activate     # for Windows
+source venv/bin/activate  # macOS/Linux
+# or venv\Scripts\activate  # Windows
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Setup environment variables
+# Setup database (PostgreSQL required)
 cp .env.example .env
-# Edit .env file with your settings
+# Edit DATABASE_URL in .env
 
-# Database migrations
+# Run migrations
 alembic upgrade head
 
-# Train/load ML model
-python scripts/train_model.py
+# Start development server
+uvicorn app.main:app --reload --port 8000
 ```
 
-### Frontend Setup
+#### Frontend Development
 
 ```bash
 # Navigate to frontend directory
@@ -97,176 +126,381 @@ cd frontend
 # Install dependencies
 npm install
 
-# Setup configuration
-cp .env.example .env.local
-# Edit API endpoints settings
+# Copy environment file
+cp .env.example .env
+# Edit VITE_API_BASE_URL if needed
+
+# Start development server
+npm run dev
 ```
 
-### Run Application
+### Available Make Commands
 
 ```bash
-# Start backend (from root directory)
-uvicorn app.main:app --reload --port 8000
+# Docker operations
+make docker-up          # Build and start all services
+make docker-down        # Stop and remove containers
+make docker-logs        # View logs from all services
+make docker-rebuild     # Rebuild and restart services
 
-# Start frontend (from frontend directory)
-cd frontend
-npm start
+# Development
+make lint               # Run code linting
+make format             # Format code
+make test               # Run tests
+make check-db           # Check database connection
+
+# Database utilities
+make migrate            # Run database migrations
+make db-shell           # Access PostgreSQL shell
 ```
-
-Application will be available at: `http://localhost:3000`
 
 ## 🔧 Configuration
 
 ### Environment Variables (.env)
 
 ```env
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/review_db
-REDIS_URL=redis://localhost:6379
+# Database Configuration
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=review_db
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
 
-# ML Model
-MODEL_PATH=models/sentiment_model.pkl
-VECTORIZER_PATH=models/vectorizer.pkl
+# Docker Environment
+DATABASE_URL=postgresql://postgres:postgres@postgres:5432/review_db
+
+# Local Development (override for local development)
+# DATABASE_URL=postgresql://postgres:postgres@localhost:5432/review_db
 
 # API Settings
-SECRET_KEY=your-secret-key
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
+DEBUG=false
+SECRET_KEY=your-super-secret-key-change-in-production
+API_VERSION=v1
 
-# File Upload
-MAX_FILE_SIZE=50MB
-ALLOWED_EXTENSIONS=.txt,.csv,.json
+# File Upload Limits
+MAX_FILE_SIZE=10485760  # 10MB in bytes
+ALLOWED_FILE_TYPES=csv,txt,json
+
+# Mock Worker Settings
+WORKER_ENABLED=true
+WORKER_DELAY_SECONDS=5
+```
+
+### Frontend Configuration (.env in frontend/)
+
+```env
+# API Base URL
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+
+# Development settings
+VITE_DEBUG_MODE=false
 ```
 
 ## 📊 Usage
 
-### 1. Upload Reviews
+### 1. Single Text Analysis
 
-- Supported formats: TXT, CSV, JSON
-- Maximum file size: 50MB
-- Batch processing up to 10,000 reviews
+1. Navigate to http://localhost:3001
+2. Enter text in the "Single Review Analysis" section
+3. Click "Analyze" - the interface will block input during processing
+4. Results appear automatically after ~5 seconds with sentiment and confidence
 
-### 2. Sentiment Analysis
+### 2. Batch File Analysis
 
-The system automatically:
-- Preprocesses text (cleaning, tokenization)
-- Applies ML model for classification
-- Calculates prediction confidence
+1. Use the "Batch File Analysis" section
+2. Upload a supported file (CSV, TXT, JSON)
+3. Supported formats:
+   - **CSV**: Reviews in rows/columns
+   - **TXT**: One review per line
+   - **JSON**: Array of review objects
+4. Maximum file size: 10MB
+5. Interface shows processing status with polling updates
+6. View comprehensive statistics when complete
 
-### 3. View Results
+### 3. API Usage
 
-- **Overall Statistics**: Percentage breakdown of sentiments
-- **Detailed Analysis**: Results for each review
-- **Time Trends**: Sentiment changes over time
-- **Word Cloud**: Most frequent words by category
-
-## 🧠 ML Model
-
-### Architecture
-
-- **Preprocessing**: Stop word removal, lemmatization, normalization
-- **Vectorization**: TF-IDF or Word2Vec embeddings
-- **Classifier**: SVM, Random Forest, or BERT-based model
-- **Postprocessing**: Probability calibration
-
-### Quality Metrics
-
-- **Accuracy**: 87.5%
-- **Precision**: 85.2%
-- **Recall**: 86.8%
-- **F1-Score**: 86.0%
-
-### Model Retraining
-
+#### Single Text Analysis
 ```bash
-# Add new training data
-python scripts/add_training_data.py --file new_reviews.csv
+# Submit analysis task
+curl -X POST http://localhost:8000/api/v1/task/run/single \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "user123", "text": "Great product, highly recommended!"}'
 
-# Retrain model
-python scripts/retrain_model.py --epochs 10
-
-# Evaluate quality
-python scripts/evaluate_model.py
+# Get result
+curl -X POST http://localhost:8000/api/v1/task/result/single \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "user123"}'
 ```
+
+#### Batch File Analysis
+```bash
+# Submit batch task
+curl -X POST http://localhost:8000/api/v1/task/run/batch \
+  -F "user_id=user123" \
+  -F "file=@reviews.csv"
+
+# Get result
+curl -X POST http://localhost:8000/api/v1/task/result/batch \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "user123"}'
+```
+
+## 🔄 Task Processing Architecture
+
+### Task Lifecycle
+
+```
+User Request → accepted → queued → ready
+                ↓           ↓        ↓
+            API Response  Worker   Result
+```
+
+### Mock Worker System
+
+The current implementation uses a mock worker to simulate ML processing:
+
+1. **Task Creation**: Tasks start with `accepted` status
+2. **Queue Processing**: Mock worker moves tasks to `queued` status
+3. **Processing Delay**: 5-second delay simulates ML processing time
+4. **Result Generation**: Mock results with realistic sentiment scores
+5. **Completion**: Tasks marked as `ready` with results stored in database
+
+### Background Worker
+
+```python
+# Mock worker provides:
+- Sentiment classification (positive/negative/neutral)
+- Confidence scores (0.0 - 1.0)
+- Batch statistics (percentages, counts)
+- Error handling and status updates
+```
+
+### Real-Time Updates
+
+- Frontend polls every 5 seconds during processing
+- UI blocks input fields while tasks are processing
+- Automatic result display when tasks complete
+- Error handling with user-friendly messages
 
 ## 📈 API Documentation
 
-### Main Endpoints
+### Task Execution Endpoints
 
+#### Single Text Analysis
 ```bash
-# Upload reviews file
-POST /api/v1/reviews/upload
-
-# Analyze single review
-POST /api/v1/reviews/analyze
+# Create single analysis task
+POST /api/v1/task/run/single
 {
-  "text": "Great product, very satisfied with the purchase!"
+  "user_id": "string",
+  "text": "string (max 512 chars)"
 }
 
-# Get statistics
-GET /api/v1/analytics/summary/{analysis_id}
-
-# Export results
-GET /api/v1/export/{analysis_id}?format=csv
+# Get single task result
+POST /api/v1/task/result/single
+{
+  "user_id": "string"
+}
 ```
 
-Full API documentation available at: `http://localhost:8000/docs`
+#### Batch File Analysis
+```bash
+# Create batch analysis task
+POST /api/v1/task/run/batch
+Content-Type: multipart/form-data
+- user_id: string
+- file: file (CSV/TXT/JSON, max 10MB)
 
-## 🧪 Testing
+# Get batch task result  
+POST /api/v1/task/result/batch
+{
+  "user_id": "string"
+}
+```
+
+#### System Endpoints
+```bash
+# Health check
+GET /health
+
+# API root info
+GET /
+
+# OpenAPI schema
+GET /api/v1/openapi.json
+```
+
+### Response Schemas
+
+#### Task Response
+```json
+{
+  "task_id": "uuid",
+  "type": "single|batch", 
+  "status": "accepted|queued|ready|error",
+  "start": 1234567890,
+  "end": 1234567890,
+  "result": {...},
+  "error": null
+}
+```
+
+#### Single Result
+```json
+{
+  "sentiment": "positive|negative|neutral",
+  "confidence": 0.85,
+  "text": "analyzed text"
+}
+```
+
+#### Batch Result
+```json
+{
+  "total_reviews": 150,
+  "positive": 90,
+  "negative": 35, 
+  "neutral": 25,
+  "positive_percentage": 60.0,
+  "negative_percentage": 23.3,
+  "neutral_percentage": 16.7
+}
+```
+
+**Full interactive API documentation**: http://localhost:8000/docs
+
+## 🧪 Testing & Development
+
+### Code Quality
 
 ```bash
-# Run all tests
-pytest
+# Linting and formatting
+make lint           # Run flake8, mypy, etc.
+make format         # Format code with black, isort
 
-# Tests with coverage
-pytest --cov=app tests/
+# Testing
+make test           # Run pytest suite
+pytest --cov=app    # Run with coverage
 
-# ML model tests
-pytest tests/test_ml/
+# Database utilities
+make migrate        # Run Alembic migrations
+make db-shell       # Access PostgreSQL shell
+./app/utils/check_tasks.sh  # Check tasks in database
+```
 
-# Integration tests
-pytest tests/test_integration/
+### Development Workflow
+
+```bash
+# 1. Start services
+make docker-up
+
+# 2. Check logs
+make docker-logs
+
+# 3. Make changes to code
+
+# 4. Rebuild affected services
+docker-compose build backend  # For backend changes
+docker-compose build frontend # For frontend changes
+
+# 5. Restart services
+docker-compose up -d backend
+```
+
+### Debugging
+
+```bash
+# View backend logs
+docker-compose logs -f backend
+
+# View frontend logs  
+docker-compose logs -f frontend
+
+# Check database tasks
+./app/utils/check_tasks.sh
+
+# Access container shells
+docker exec -it review-backend-1 bash
+docker exec -it review-frontend-1 sh
+docker exec -it review-postgres-1 psql -U postgres -d review_db
 ```
 
 ## 📁 Project Structure
 
 ```
 review/
-├── app/                    # Backend application
-│   ├── api/               # API endpoints
-│   ├── core/              # Configuration and settings
-│   ├── ml/                # ML modules
-│   ├── models/            # SQLAlchemy models
-│   ├── services/          # Business logic
-│   └── utils/             # Utilities
-├── frontend/              # React application
+├── app/                        # Backend application (FastAPI)
+│   ├── core/                  # Configuration, logging, exceptions
+│   ├── infra/                 # Infrastructure layer
+│   │   └── db/               # Database models, repositories
+│   ├── tasks/                 # Task domain
+│   │   ├── models.py         # SQLAlchemy models
+│   │   ├── schemas.py        # Pydantic schemas
+│   │   ├── router.py         # API endpoints
+│   │   └── service.py        # Business logic
+│   ├── workers/              # Background workers
+│   │   └── mock_worker.py    # Mock ML processing worker
+│   ├── utils/                # Utilities
+│   │   └── check_tasks.sh    # Database inspection script
+│   └── main.py               # FastAPI application entry
+├── frontend/                   # Vue.js 3 application
 │   ├── src/
-│   │   ├── components/    # React components
-│   │   ├── pages/         # Application pages
-│   │   ├── services/      # API services
-│   │   └── utils/         # Utilities
-├── models/                # Trained ML models
-├── data/                  # Training datasets
-├── scripts/               # Training scripts and utilities
-├── tests/                 # Tests
-├── docs/                  # Documentation
-├── docker-compose.yml     # Docker configuration
-├── requirements.txt       # Python dependencies
-└── README.md             # This file
+│   │   ├── components/       # Vue components
+│   │   ├── views/            # Page components (Upload.vue)
+│   │   ├── store/            # Pinia stores
+│   │   ├── services/         # API services  
+│   │   ├── composables/      # Vue 3 composables (useTaskPolling)
+│   │   ├── types/            # TypeScript type definitions
+│   │   └── mocks/            # Mock data for development
+│   ├── nginx.conf            # Nginx configuration
+│   └── Dockerfile            # Frontend container build
+├── data/                      # Sample data files
+├── docs/                      # Documentation
+├── alembic/                   # Database migrations
+├── docker-compose.yml         # Multi-service container setup
+├── Dockerfile.backend         # Backend container build
+├── docker-entrypoint.sh       # Backend startup script
+├── Makefile                   # Development automation
+├── requirements.txt           # Python dependencies
+└── README.md                  # This documentation
 ```
 
-## 🐳 Docker
+## 🐳 Docker Architecture
+
+### Services
+
+- **Backend** (port 8000): FastAPI application with mock worker
+- **Frontend** (port 3001): Vue.js SPA served by Nginx
+- **PostgreSQL** (port 5432): Database with persistent volume
+
+### Container Management
 
 ```bash
-# Build and run with Docker Compose
-docker-compose up --build
+# Start all services
+make docker-up
+# or: docker-compose up --build -d
 
-# Database only
-docker-compose up postgres redis
+# Stop services
+make docker-down  
+# or: docker-compose down
 
-# Production build
-docker-compose -f docker-compose.prod.yml up
+# View logs
+make docker-logs
+# or: docker-compose logs -f
+
+# Rebuild specific service
+docker-compose build backend
+docker-compose up -d backend
+
+# Access service shells
+docker exec -it review-backend-1 bash
+docker exec -it review-postgres-1 psql -U postgres -d review_db
 ```
+
+### Volumes & Data Persistence
+
+- PostgreSQL data persists in Docker volume `postgres_data`
+- Backend code mounted for development
+- Frontend build artifacts served by Nginx
 
 ## 🤝 Contributing
 
@@ -285,37 +519,105 @@ docker-compose -f docker-compose.prod.yml up
 
 ## 📋 Roadmap
 
-### v1.0 (Current)
-- ✅ Basic sentiment analysis
-- ✅ Web interface for file uploads
-- ✅ Simple statistics and visualization
+### v1.0 (Current - MVP)
+- ✅ Task-based architecture with async processing
+- ✅ Single text and batch file analysis
+- ✅ Real-time UI updates with polling
+- ✅ Mock worker system for development
+- ✅ Docker containerization
+- ✅ OpenAPI compliant REST API
+- ✅ Vue.js 3 modern frontend
+- ✅ PostgreSQL data persistence
 
-### v1.1 (Planned)
-- 🔄 Emotion analysis (joy, sadness, anger, fear)
-- 🔄 API for external system integration
-- 🔄 Export to various formats
+### v1.1 (Planned - ML Integration)
+- 🔄 Real ML model integration (replace mock worker)
+- 🔄 Model training pipeline
+- 🔄 Enhanced sentiment confidence scoring
+- 🔄 Multi-language support
+- 🔄 Result export functionality (CSV, JSON)
 
-### v2.0 (Future)
-- 📋 Aspect-based analysis (what specifically users like/dislike)
-- 📋 Competitive analysis
-- 📋 Real-time analysis via webhooks
-- 📋 Mobile application
+### v2.0 (Future - Advanced Features) 
+- 📋 Aspect-based sentiment analysis
+- 📋 Emotion detection (joy, sadness, anger, etc.)
+- 📋 Real-time analysis via WebSockets
+- 📋 User authentication and multi-tenancy
+- 📋 Advanced analytics dashboard
+- 📋 API rate limiting and caching
+- 📋 Kubernetes deployment manifests
 
 ## ⚠️ Known Limitations
 
-- Current model is optimized for multiple languages
-- Maximum single review length: 5000 characters
-- Image and video analysis not supported
-- Internet connection required for some ML operations
+- **Mock Processing**: Currently uses simulated ML processing (not real AI models)
+- **Text Length**: Single reviews limited to 512 characters
+- **File Size**: Batch files limited to 10MB
+- **Concurrent Users**: No user authentication - single-user simulation with user_id
+- **File Formats**: Limited to CSV, TXT, JSON (no Excel, PDF, etc.)
+- **Languages**: Mock worker returns English results only
+- **Scalability**: Single worker process (not horizontally scalable yet)
 
-## 📞 Support
+## �️ Troubleshooting
 
+### Common Issues
+
+**Frontend can't connect to backend:**
+```bash
+# Check if backend is running
+curl http://localhost:8000/health
+
+# Verify docker services
+docker-compose ps
+
+# Check frontend environment
+cat frontend/.env
+```
+
+**Database connection issues:**
+```bash
+# Check PostgreSQL status
+docker-compose logs postgres
+
+# Verify database exists
+docker exec review-postgres-1 psql -U postgres -l
+```
+
+**Tasks not processing:**
+```bash
+# Check worker logs
+docker-compose logs backend | grep worker
+
+# Inspect tasks in database
+./app/utils/check_tasks.sh
+```
+
+### Performance Notes
+
+- Processing delay is intentionally set to 5 seconds for demo purposes
+- Real ML models would have variable processing times
+- Database queries are optimized with indexes for user_id and status
 
 ## 📄 License
 
 This project is licensed under the MIT License. See the `LICENSE` file for more information.
 
+## 🤝 Contributing
 
-⭐ If this project helped you, please give it a star on GitHub!
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Follow the existing code style and architecture patterns
+4. Add tests for new functionality
+5. Update documentation as needed
+6. Submit a pull request
 
-**Made with ❤️ by the Viewman Team**
+### Development Guidelines
+
+- Follow FastAPI and Vue.js best practices
+- Use TypeScript for frontend development
+- Write comprehensive docstrings for Python code
+- Maintain clean separation between UI logic (composables) and state (Pinia stores)
+- Test API endpoints with the included utilities
+
+---
+
+⭐ **If this project helped you, please give it a star on GitHub!**
+
+**Made with ❤️ for modern web development**

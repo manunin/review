@@ -20,6 +20,10 @@ export interface TaskStoreState {
   lastSingleResult: SingleResult | null
   lastBatchResult: BatchResult | null
   
+  // Current task IDs for polling
+  currentSingleTaskId: string | null
+  currentBatchTaskId: string | null
+  
   // UI State
   loading: LoadingState
   error: ErrorState
@@ -32,6 +36,8 @@ export const useTaskStore = defineStore('tasks', {
   state: (): TaskStoreState => ({
     lastSingleResult: null,
     lastBatchResult: null,
+    currentSingleTaskId: null,
+    currentBatchTaskId: null,
     loading: {
       isLoading: false,
       message: undefined
@@ -57,6 +63,10 @@ export const useTaskStore = defineStore('tasks', {
     // Results availability
     hasSingleResult: (state): boolean => state.lastSingleResult !== null,
     hasBatchResult: (state): boolean => state.lastBatchResult !== null,
+    
+    // Current task IDs
+    getCurrentSingleTaskId: (state): string | null => state.currentSingleTaskId,
+    getCurrentBatchTaskId: (state): string | null => state.currentBatchTaskId,
     
     // Analytics from batch result
     getAnalyticsData: (state) => {
@@ -123,7 +133,15 @@ export const useTaskStore = defineStore('tasks', {
       this.lastBatchResult = result
     },
 
-    // API Actions
+    setCurrentSingleTaskId(taskId: string | null): void {
+      this.currentSingleTaskId = taskId
+    },
+
+    setCurrentBatchTaskId(taskId: string | null): void {
+      this.currentBatchTaskId = taskId
+    },
+
+    // API Actions - simplified without UI logic
     async analyzeSingleText(text: string): Promise<SingleResult | null> {
       this.setLoading(true, 'Analyzing text...')
       
@@ -136,26 +154,24 @@ export const useTaskStore = defineStore('tasks', {
           return null
         }
 
-        // Get result (in mock mode, result is immediately available)
+        const task = taskResult.data!
+        this.setCurrentSingleTaskId(task.task_id)
+
+        // Get result immediately if available
         const resultData = await taskService.getLastSingleResult()
         
         if (resultData.success) {
           this.setSingleResult(resultData.data!)
-          return resultData.data!
-        } else if (resultData.statusCode === 202) {
-          // Task still processing
           this.setLoading(false)
-          return null
+          return resultData.data!
         } else {
-          this.setError(resultData.error || 'Failed to get analysis result', { statusCode: resultData.statusCode })
+          this.setLoading(false)
           return null
         }
       } catch (error: any) {
         console.error('Single text analysis error:', error)
         this.setError(error.message || 'Unexpected error during text analysis')
         return null
-      } finally {
-        this.setLoading(false)
       }
     },
 
@@ -171,26 +187,24 @@ export const useTaskStore = defineStore('tasks', {
           return null
         }
 
-        // Get result (in mock mode, result is immediately available)
+        const task = taskResult.data!
+        this.setCurrentBatchTaskId(task.task_id)
+
+        // Get result immediately if available
         const resultData = await taskService.getLastBatchResult()
         
         if (resultData.success) {
           this.setBatchResult(resultData.data!)
-          return resultData.data!
-        } else if (resultData.statusCode === 202) {
-          // Task still processing
           this.setLoading(false)
-          return null
+          return resultData.data!
         } else {
-          this.setError(resultData.error || 'Failed to get batch analysis result', { statusCode: resultData.statusCode })
+          this.setLoading(false)
           return null
         }
       } catch (error: any) {
         console.error('Batch file analysis error:', error)
         this.setError(error.message || 'Unexpected error during file processing')
         return null
-      } finally {
-        this.setLoading(false)
       }
     },
 
@@ -256,6 +270,8 @@ export const useTaskStore = defineStore('tasks', {
     clearAllData(): void {
       this.lastSingleResult = null
       this.lastBatchResult = null
+      this.currentSingleTaskId = null
+      this.currentBatchTaskId = null
       this.clearError()
       this.setLoading(false)
     }

@@ -75,15 +75,8 @@ class TaskService:
             extra_data={"text": text}
         )
         
-        # Convert to domain model and add mock result for demo
+        # Convert to domain model
         task = self._db_task_to_domain(db_task)
-        
-        # For demo purposes, add immediate mock analysis result
-        task.result = SingleResult(
-            sentiment=SentimentEnum.positive,
-            confidence=0.95,
-            text=text
-        )
         
         logger.info("Single task created", extra={"task_id": task.task_id})
         return task
@@ -140,19 +133,8 @@ class TaskService:
             }
         )
         
-        # Convert to domain model and add mock result for demo
+        # Convert to domain model
         task = self._db_task_to_domain(db_task)
-        
-        # For demo purposes, add immediate mock batch analysis result
-        task.result = BatchResult(
-            total_reviews=150,
-            positive=90,
-            negative=35,
-            neutral=25,
-            positive_percentage=60.0,
-            negative_percentage=23.3,
-            neutral_percentage=16.7
-        )
         
         logger.info("Batch task created", extra={"task_id": task.task_id})
         return task
@@ -185,12 +167,12 @@ class TaskService:
             
         task = self._db_task_to_domain(db_task)
         
-        # Add mock result if task is ready
-        if task.status == TaskStatusEnum.ready:
+        # Add result from database if task is ready
+        if task.status == TaskStatusEnum.ready and db_task.sentiment and db_task.confidence is not None:
             task.result = SingleResult(
-                sentiment=SentimentEnum.positive,
-                confidence=0.95,
-                text="Sample analyzed text"
+                sentiment=SentimentEnum(db_task.sentiment.value if hasattr(db_task.sentiment, 'value') else db_task.sentiment),
+                confidence=db_task.confidence,
+                text=db_task.text
             )
             
         logger.info("Single task retrieved", extra={"task_id": task.task_id})
@@ -224,16 +206,20 @@ class TaskService:
             
         task = self._db_task_to_domain(db_task)
         
-        # Add mock result if task is ready
-        if task.status == TaskStatusEnum.ready:
+        # Add result from database if task is ready
+        if (task.status == TaskStatusEnum.ready and 
+            db_task.total_reviews is not None and 
+            db_task.positive is not None and 
+            db_task.negative is not None and 
+            db_task.neutral is not None):
             task.result = BatchResult(
-                total_reviews=150,
-                positive=90,
-                negative=35,
-                neutral=25,
-                positive_percentage=60.0,
-                negative_percentage=23.3,
-                neutral_percentage=16.7
+                total_reviews=db_task.total_reviews,
+                positive=db_task.positive,
+                negative=db_task.negative,
+                neutral=db_task.neutral,
+                positive_percentage=db_task.positive_percentage or 0.0,
+                negative_percentage=db_task.negative_percentage or 0.0,
+                neutral_percentage=db_task.neutral_percentage or 0.0
             )
             
         logger.info("Batch task retrieved", extra={"task_id": task.task_id})

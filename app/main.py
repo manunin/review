@@ -25,6 +25,7 @@ from app.core.security import (
 )
 from app.infra.db.base import close_db, init_db
 from app.tasks.router import router as task_router
+from app.workers import start_mock_worker, stop_mock_worker
 
 # Configure logging first
 configure_logging()
@@ -46,6 +47,11 @@ async def lifespan(app: FastAPI):
         # For now, continue without database for basic functionality
         # raise e  # Uncomment when database is required
     
+    # Start mock worker for task processing
+    import asyncio
+    worker_task = asyncio.create_task(start_mock_worker())
+    logger.info("Mock worker started successfully")
+    
     # TODO: Initialize other services here:
     # app.state.redis = await create_redis_pool(settings.redis_url)
     # app.state.ml_model = await load_ml_model()
@@ -54,6 +60,18 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     logger.info("Shutting down Smart Review Analyzer API")
+    
+    # Stop mock worker
+    try:
+        await stop_mock_worker()
+        worker_task.cancel()
+        try:
+            await worker_task
+        except asyncio.CancelledError:
+            pass
+        logger.info("Mock worker stopped successfully")
+    except Exception as e:
+        logger.error(f"Error stopping mock worker: {e}")
     
     # Cleanup database connections
     try:

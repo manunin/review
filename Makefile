@@ -1,6 +1,6 @@
 # Makefile for running tests and development tasks
 
-.PHONY: help test test-unit test-integration test-performance test-security test-health test-coverage test-quick clean install lint format check
+.PHONY: help test test-unit test-integration test-performance test-security test-health test-coverage test-quick clean install lint format check docker-build docker-up docker-down docker-logs docker-shell
 
 # Default target
 help:
@@ -18,6 +18,11 @@ help:
 	@echo "  format           - Format code"
 	@echo "  check            - Run all checks (lint, format, tests)"
 	@echo "  clean            - Clean temporary files"
+	@echo "  docker-build     - Build Docker images"
+	@echo "  docker-up        - Start all services with Docker Compose"
+	@echo "  docker-down      - Stop all services"
+	@echo "  docker-logs      - Show logs from all services"
+	@echo "  docker-shell     - Open shell in backend container"
 
 # Install dependencies
 install:
@@ -135,3 +140,33 @@ coverage-module:
 	@if [ -n "$(MODULE)" ]; then \
 		python -m pytest tests/ --cov=$(MODULE) --cov-report=term-missing; \
 	fi
+
+# Docker commands
+docker-build:
+	@echo "Building Docker images..."
+	docker-compose build
+
+docker-up:
+	@echo "Starting all services..."
+	docker-compose up -d
+	@echo "Services started! Access:"
+	@echo "  Frontend: http://localhost:3001"
+	@echo "  Backend API: http://localhost:8000"
+	@echo "  API Docs: http://localhost:8000/docs"
+
+docker-down:
+	@echo "Stopping all services..."
+	docker-compose down
+
+docker-logs:
+	@echo "Showing logs from all services..."
+	docker-compose logs -f
+
+docker-shell:
+	@echo "Opening shell in backend container..."
+	docker-compose exec backend bash
+
+docker-clean:
+	@echo "Cleaning up Docker resources..."
+	docker-compose down -v
+	docker system prune -f
